@@ -362,7 +362,7 @@ class multilevel_solver:
 
         """
 
-        from pyamg.util.linalg import residual_norm, norm
+        from pyamg.util.linalg import residual_norm
 
         if x0 is None:
             x = np.zeros_like(b)
@@ -418,13 +418,15 @@ class multilevel_solver:
 
                 cb = callback
                 if residuals is not None:
-                    residuals[:] = [residual_norm(A, x, b)]
+                    rn = np.linalg.norm(b - A * x, axis=0)
+                    residuals[:] = [rn]
 
                     def callback(x):
                         if sp.isscalar(x):
                             residuals.append(x)
                         else:
-                            residuals.append(residual_norm(A, x, b))
+                            rn = np.linalg.norm(b - A * x, axis=0)
+                            residuals.append(rn)
                         if cb is not None:
                             cb(x)
 
@@ -434,7 +436,7 @@ class multilevel_solver:
         else:
             # Scale tol by normb
             # Don't scale tol earlier. The accel routine should also scale tol
-            normb = norm(b)
+            normb = np.max(np.linalg.norm(b, axis=0))
             if normb != 0:
                 tol = tol * normb
 
@@ -452,23 +454,23 @@ class multilevel_solver:
         from pyamg.util.utils import to_type
         tp = upcast(b.dtype, x.dtype, self.levels[0].A.dtype)
         [b, x] = to_type(tp, [b, x])
-        b = np.ravel(b)
-        x = np.ravel(x)
 
         A = self.levels[0].A
 
-        residuals.append(residual_norm(A, x, b))
+        rn = np.linalg.norm(b - A * x, axis=0)
+        residuals.append(rn)
 
         self.first_pass = True
 
-        while len(residuals) <= maxiter and residuals[-1] > tol:
+        while len(residuals) <= maxiter and np.max(residuals[-1]) > tol:
             if len(self.levels) == 1:
                 # hierarchy has only 1 level
                 x = self.coarse_solver(A, b)
             else:
                 self.__solve(0, x, b, cycle)
 
-            residuals.append(residual_norm(A, x, b))
+            rn = np.linalg.norm(b - A * x, axis=0)
+            residuals.append(rn)
 
             self.first_pass = False
 
@@ -520,6 +522,11 @@ class multilevel_solver:
                 self.__solve(lvl + 1, coarse_x, coarse_b, cycle)
                 self.__solve(lvl + 1, coarse_x, coarse_b, 'V')
             elif cycle == "AMLI":
+
+                # TODO : may not work for block b
+                if coarse_b.shape[1] > 1:
+                    raise ValueError('AMLI will not work with multiple RHS')
+
                 # Run nAMLI AMLI cycles, which compute "optimal" corrections by
                 # orthogonalizing the coarse-grid corrections in the A-norm
                 nAMLI = 2
@@ -646,6 +653,7 @@ def coarse_grid_solver(solver):
             return self.LU_Map * self.LU.solve(np.ravel(self.LU_Map.T * b))
 
     elif solver in ['bicg', 'bicgstab', 'cg', 'cgs', 'gmres', 'qmr', 'minres']:
+
         from pyamg import krylov
         if hasattr(krylov, solver):
             fn = getattr(krylov, solver)
@@ -653,6 +661,11 @@ def coarse_grid_solver(solver):
             fn = getattr(sp.sparse.linalg.isolve, solver)
 
         def solve(self, A, b):
+
+            # TODO : may not work for block b
+            if b.shape[1] > 1:
+                raise ValueError('Kyrlov will not work with multiple RHS')
+
             if 'tol' not in kwargs:
                 eps = np.finfo(np.float).eps
                 feps = np.finfo(np.single).eps

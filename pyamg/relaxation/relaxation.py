@@ -17,7 +17,7 @@ __all__ += ['jacobi_ne', 'gauss_seidel_ne', 'gauss_seidel_nr']
 __all__ += ['gauss_seidel_indexed', 'block_jacobi', 'block_gauss_seidel']
 
 
-def make_system(A, x, b, formats=None):
+def make_system(A, x, b, formats=None, multivector=False):
     """
     Return A,x,b suitable for relaxation or raise an exception
 
@@ -32,6 +32,8 @@ def make_system(A, x, b, formats=None):
     formats: {'csr', 'csc', 'bsr', 'lil', 'dok',...}
         desired sparse matrix format
         default is no change to A's format
+    multivector : bool
+        If True, then consider muliple vectors for x and b
 
     Returns
     -------
@@ -87,9 +89,9 @@ def make_system(A, x, b, formats=None):
     if M != N:
         raise ValueError('expected square matrix')
 
-    if x.shape not in [(M,), (M, 1)]:
+    if (not multivector and x.shape not in [(M,), (M, 1)]) or (multivector and x.shape[0] != M):
         raise ValueError('x has invalid dimensions')
-    if b.shape not in [(M,), (M, 1)]:
+    if (not multivector and b.shape not in [(M,), (M, 1)]) or (multivector and b.shape[0] != M):
         raise ValueError('b has invalid dimensions')
 
     if A.dtype != x.dtype or A.dtype != b.dtype:
@@ -97,9 +99,12 @@ def make_system(A, x, b, formats=None):
 
     if not x.flags.carray:
         raise ValueError('x must be contiguous in memory')
+    if not b.flags.carray:
+        raise ValueError('b must be contiguous in memory')
 
-    x = np.ravel(x)
-    b = np.ravel(b)
+    # TODO: needed?
+    # x = np.ravel(x)
+    # b = np.ravel(b)
 
     return A, x, b
 
@@ -414,8 +419,8 @@ def jacobi(A, x, b, iterations=1, omega=1.0):
 
     if sparse.isspmatrix_csr(A):
         for iter in range(iterations):
-            amg_core.jacobi(A.indptr, A.indices, A.data, x, b, temp,
-                            row_start, row_stop, row_step, omega)
+            amg_core.jacobi_m(A.indptr, A.indices, A.data, x, b, temp,
+                              row_start, row_stop, row_step, omega)
     else:
         R, C = A.blocksize
         if R != C:

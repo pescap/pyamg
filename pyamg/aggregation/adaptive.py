@@ -313,6 +313,7 @@ def adaptive_sa_solver(A, initial_candidates=None, symmetry='hermitian',
                                                 strength=strength,
                                                 improve_candidates=None,
                                                 keep=True, **kwargs)
+                x0 = x0.reshape((x.shape[0], -1))
                 x = sa_temp.solve(b, x0=x0,
                                   tol=float(np.finfo(np.float).tiny),
                                   maxiter=candidate_iters, cycle='V')

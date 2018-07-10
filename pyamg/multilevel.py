@@ -6,6 +6,10 @@ from warnings import warn
 import scipy as sp
 import numpy as np
 
+import warnings
+warnings.filterwarnings(action="ignore", module="scipy",
+                        message="^internal gelsd")
+
 
 __all__ = ['multilevel_solver', 'coarse_grid_solver']
 
@@ -524,7 +528,7 @@ class multilevel_solver:
             elif cycle == "AMLI":
 
                 # TODO : may not work for block b
-                if coarse_b.shape[1] > 1:
+                if coarse_b.shape not in [(coarse_b.shape[0],), (coarse_b.shape[0], 1)]:
                     raise ValueError('AMLI will not work with multiple RHS')
 
                 # Run nAMLI AMLI cycles, which compute "optimal" corrections by
@@ -663,7 +667,7 @@ def coarse_grid_solver(solver):
         def solve(self, A, b):
 
             # TODO : may not work for block b
-            if b.shape[1] > 1:
+            if b.shape not in [(b.shape[0],), (b.shape[0], 1)]:
                 raise ValueError('Kyrlov will not work with multiple RHS')
 
             if 'tol' not in kwargs:

@@ -169,10 +169,12 @@ def cpp_flag(compiler):
 def omp_flag(compiler):
     """Return the -fopenmp flag
     """
-    fopenmp = '-fopenmp'
-    if has_flag(compiler, fopenmp):
-        return fopenmp
+    if has_flag(compiler,'-fopenmp'):
+        return '-fopenmp'
+    elif has_flag(compiler, '-Xpreprocessor -fopenmp -lomp'):
+        return '-Xpreprocessor -fopenmp -lomp'
     else:
+        print('...not using OpenMP')
         return ''
 
 
@@ -196,7 +198,8 @@ class BuildExt(build_ext):
         if ct == 'unix':
             opts.append('-DVERSION_INFO="%s"' % self.distribution.get_version())
             opts.append(cpp_flag(self.compiler))
-            omp_str = cpp_flag(self.compiler)
+            omp_str = omp_flag(self.compiler)
+            print("OPENMP: ", omp_str)
             if len(omp_str) > 0:
                 opts.append(omp_str)
             if has_flag(self.compiler, '-fvisibility=hidden'):

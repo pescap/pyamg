@@ -9,3 +9,4 @@ from .linalg import *
 from .relaxation import *
 from .ruge_stuben import *
 from .smoothed_aggregation import *
+from .sparse import *

@@ -166,6 +166,15 @@ def cpp_flag(compiler):
         raise RuntimeError('Unsupported compiler -- at least C++11 support '
                            'is needed!')
 
+def omp_flag(compiler):
+    """Return the -fopenmp flag
+    """
+    fopenmp = '-fopenmp'
+    if has_flag(compiler, fopenmp):
+        return fopenmp
+    else:
+        return ''
+
 
 class BuildExt(build_ext):
     """A custom build extension for adding compiler-specific options."""
@@ -187,6 +196,9 @@ class BuildExt(build_ext):
         if ct == 'unix':
             opts.append('-DVERSION_INFO="%s"' % self.distribution.get_version())
             opts.append(cpp_flag(self.compiler))
+            omp_str = cpp_flag(self.compiler)
+            if len(omp_str) > 0:
+                opts.append(omp_str)
             if has_flag(self.compiler, '-fvisibility=hidden'):
                 opts.append('-fvisibility=hidden')
         elif ct == 'msvc':
@@ -226,7 +238,8 @@ amg_core_headers = ['evolution_strength.h',
                     'linalg.h',
                     'relaxation.h',
                     'ruge_stuben.h',
-                    'smoothed_aggregation.h']
+                    'smoothed_aggregation.h',
+                    'sparse.h']
 amg_core_headers = [f.replace('.h', '') for f in amg_core_headers]
 
 ext_modules = [Extension('pyamg.amg_core.%s' % f,

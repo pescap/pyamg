@@ -171,8 +171,8 @@ def omp_flag(compiler):
     """
     if has_flag(compiler,'-fopenmp'):
         return '-fopenmp'
-    elif has_flag(compiler, '-Xpreprocessor -fopenmp -lomp'):
-        return '-Xpreprocessor -fopenmp -lomp'
+    elif has_flag(compiler, '-Xclang -fopenmp -lomp'):
+        return '-Xclang -fopenmp -lomp'
     else:
         print('...not using OpenMP')
         return ''

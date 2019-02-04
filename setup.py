@@ -171,8 +171,8 @@ def omp_flag(compiler):
     """
     if has_flag(compiler,'-fopenmp'):
         return '-fopenmp'
-    elif has_flag(compiler, '-Xclang -fopenmp -lomp'):
-        return '-Xclang -fopenmp -lomp'
+    elif has_flag(compiler, '-Xclang -fopenmp'):
+        return '-Xclang -fopenmp'
     else:
         print('...not using OpenMP')
         return ''
@@ -185,8 +185,8 @@ class BuildExt(build_ext):
         'unix': [],
     }
 
-    if sys.platform == 'darwin':
-        c_opts['unix'] += ['-stdlib=libc++', '-mmacosx-version-min=10.7']
+    #if sys.platform == 'darwin':
+    #    c_opts['unix'] += ['-stdlib=libc++', '-mmacosx-version-min=10.7']
 
     def build_extensions(self):
         try:

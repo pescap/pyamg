@@ -171,8 +171,8 @@ def omp_flag(compiler):
     """
     if has_flag(compiler,'-fopenmp'):
         return '-fopenmp'
-    elif has_flag(compiler, '-Xclang -fopenmp'):
-        return '-Xclang -fopenmp'
+    elif has_flag(compiler, '-Xpreprocessor -fopenmp'):
+        return '-Xpreprocessor -fopenmp'
     else:
         print('...not using OpenMP')
         return ''
@@ -189,25 +189,34 @@ class BuildExt(build_ext):
     #    c_opts['unix'] += ['-stdlib=libc++', '-mmacosx-version-min=10.7']
 
     def build_extensions(self):
+
         try:
             self.compiler.compiler_so.remove("-Wstrict-prototypes")
         except (AttributeError, ValueError):
             pass
+
         ct = self.compiler.compiler_type
-        opts = self.c_opts.get(ct, [])
+        compile_opts = self.c_opts.get(ct, [])
+        link_opts = []
+        print('compiler = ', self.compiler)
         if ct == 'unix':
-            opts.append('-DVERSION_INFO="%s"' % self.distribution.get_version())
-            opts.append(cpp_flag(self.compiler))
+            compile_opts.append('-DVERSION_INFO="%s"' % self.distribution.get_version())
+            compile_opts.append(cpp_flag(self.compiler))
             omp_str = omp_flag(self.compiler)
             print("OPENMP: ", omp_str)
-            if len(omp_str) > 0:
-                opts.append(omp_str)
+            if omp_str:
+                compile_opts.append(omp_str)
+                compile_opts.append('-I/usr/local/include')
+                link_opts.append('-L/usr/local/lib')
+                link_opts.append('-lomp')
             if has_flag(self.compiler, '-fvisibility=hidden'):
-                opts.append('-fvisibility=hidden')
+                compile_opts.append('-fvisibility=hidden')
         elif ct == 'msvc':
-            opts.append('/DVERSION_INFO=\\"%s\\"' % self.distribution.get_version())
+            compile_opts.append('/DVERSION_INFO=\\"%s\\"' % self.distribution.get_version())
+
         for ext in self.extensions:
-            ext.extra_compile_args = opts
+            ext.extra_compile_args = compile_opts
+            ext.extra_link_args = link_opts
         build_ext.build_extensions(self)
 
     # identify extension modules

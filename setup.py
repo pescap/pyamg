@@ -205,7 +205,7 @@ class BuildExt(build_ext):
             omp_str = omp_flag(self.compiler)
             print("OPENMP: ", omp_str)
             if omp_str:
-                compile_opts.append(omp_str)
+                compile_opts.extend(omp_str.split(' '))
                 compile_opts.append('-I/usr/local/include')
                 link_opts.append('-L/usr/local/lib')
                 link_opts.append('-lomp')

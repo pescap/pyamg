@@ -170,12 +170,12 @@ def omp_flag(compiler):
     """Return the -fopenmp flag
     """
     if has_flag(compiler,'-fopenmp'):
-        return '-fopenmp'
+        return '-fopenmp', ''
     elif has_flag(compiler, '-Xpreprocessor -fopenmp'):
-        return '-Xpreprocessor -fopenmp'
+        return '-Xpreprocessor -fopenmp', '-lomp'
     else:
         print('...not using OpenMP')
-        return ''
+        return '', ''
 
 
 class BuildExt(build_ext):
@@ -198,19 +198,31 @@ class BuildExt(build_ext):
         ct = self.compiler.compiler_type
         compile_opts = self.c_opts.get(ct, [])
         link_opts = []
-        print('compiler = ', self.compiler)
         if ct == 'unix':
+            # add version flag
             compile_opts.append('-DVERSION_INFO="%s"' % self.distribution.get_version())
+
+            # add c++11 or c++14 flag
             compile_opts.append(cpp_flag(self.compiler))
-            omp_str = omp_flag(self.compiler)
-            print("OPENMP: ", omp_str)
-            if omp_str:
-                compile_opts.extend(omp_str.split(' '))
+
+            # add OpenMP flags
+            # clang -Xprocessor -fopenmp -lomp
+            # or
+            # gcc -fopenmp
+            omp_compile, omp_link = omp_flag(self.compiler)
+            print(omp_compile)
+            print(omp_link)
+            print("OPENMP: ", omp_compile, omp_link)
+            if omp_compile:
+                compile_opts.extend(omp_compile.split(' '))
                 compile_opts.append('-I/usr/local/include')
                 link_opts.append('-L/usr/local/lib')
-                link_opts.append('-lomp')
+                link_opts.extend(omp_link.split(' '))
+
+            # add visibility flag
             if has_flag(self.compiler, '-fvisibility=hidden'):
                 compile_opts.append('-fvisibility=hidden')
+
         elif ct == 'msvc':
             compile_opts.append('/DVERSION_INFO=\\"%s\\"' % self.distribution.get_version())
 

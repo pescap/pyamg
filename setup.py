@@ -19,13 +19,14 @@ supporting C++ code for performance critical operations.
 """
 
 import os
-import sys
 import subprocess
 
 import setuptools
 from setuptools import setup, find_packages, Extension
 from setuptools.command.build_ext import build_ext
 from setuptools.command.test import test as TestCommand
+
+import numpy.distutils.system_info
 
 version = '4.0.0'
 isreleased = True
@@ -166,11 +167,12 @@ def cpp_flag(compiler):
         raise RuntimeError('Unsupported compiler -- at least C++11 support '
                            'is needed!')
 
+
 def omp_flag(compiler):
     """Return the -fopenmp flag
     """
-    if has_flag(compiler,'-fopenmp'):
-        return '-fopenmp', ''
+    if has_flag(compiler, '-fopenmp'):
+        return '-fopenmp', '-fopenmp'
     elif has_flag(compiler, '-Xpreprocessor -fopenmp'):
         return '-Xpreprocessor -fopenmp', '-lomp'
     else:
@@ -210,13 +212,15 @@ class BuildExt(build_ext):
             # or
             # gcc -fopenmp
             omp_compile, omp_link = omp_flag(self.compiler)
-            print(omp_compile)
-            print(omp_link)
             print("OPENMP: ", omp_compile, omp_link)
             if omp_compile:
+                Idirs = numpy.distutils.system_info.default_include_dirs
+                Ldirs =numpy.distutils.system_info.default_lib_dirs
+
                 compile_opts.extend(omp_compile.split(' '))
-                compile_opts.append('-I/usr/local/include')
-                link_opts.append('-L/usr/local/lib')
+                compile_opts.extend(['-I' + d for d in Idirs])
+
+                link_opts.extend(['-L' + d for d in Ldirs])
                 link_opts.extend(omp_link.split(' '))
 
             # add visibility flag

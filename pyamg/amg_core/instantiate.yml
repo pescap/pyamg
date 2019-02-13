@@ -92,11 +92,6 @@ instantiate:
   functions:
     - csr_matvec
 
-- types:
-    - None
-  functions:
-    - omp_info
-
 remaps:
     - fit_candidates_real: fit_candidates
     - fit_candidates_complex: fit_candidates

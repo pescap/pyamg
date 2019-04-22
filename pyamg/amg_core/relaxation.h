@@ -599,7 +599,7 @@ void gauss_seidel_indexed(const I Ap[], const int Ap_size,
 
 /*
  * Perform NE Jacobi on the linear system A x = b
- * This effectively carries out weighted-Jacobi on A A^T x = A^T b
+ * This effectively carries out weighted-Jacobi on A^TA x = A^T b
  * (also known as Cimmino's relaxation)
  *
  * Parameters
@@ -668,7 +668,8 @@ void jacobi_ne(const I Ap[], const int Ap_size,
 
 /*
  * Perform NE Gauss-Seidel on the linear system A x = b
- * This effectively carries out Gauss-Seidel on A A.H x = b
+ * This effectively carries out Gauss-Seidel on A A.H y = b,
+ * where x = A.h y.
  *
  * Parameters
  * ----------

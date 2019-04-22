@@ -14,7 +14,7 @@ def cgnr(A, b, x0=None, tol=1e-5, maxiter=None, xtype=None, M=None,
          callback=None, residuals=None):
     """Conjugate Gradient, Normal Residual algorithm.
 
-    Applies CG to the normal equations, A.H A x = b. Left preconditioning
+    Applies CG to the normal equations, A.H A x = A.H b. Left preconditioning
     is supported.  Note that unless A is well-conditioned, the use of
     CGNR is inadvisable
 

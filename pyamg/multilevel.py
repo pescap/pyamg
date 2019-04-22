@@ -4,6 +4,7 @@
 from warnings import warn
 from pyamg.util.utils import unpack_arg
 from pyamg.vis.vis_coarse import vis_splitting
+import pyamg.relaxation.smoothing as sm
 
 import scipy as sp
 import numpy as np
@@ -407,6 +408,30 @@ class multilevel_solver:
         """
         return sum([level.A.shape[0] for level in self.levels]) /\
             float(self.levels[0].A.shape[0])
+
+    def change_solve_matrix(self, A0):
+        """ Change matrix that we are solving/preconditioning
+        as well as corresponding relaxation routines on finest
+        grid in hierarchy. Used, for example, to precondition a
+        quadratic finite element discretization with linears.
+        """
+        self.levels[0].A = A0
+        fn1, kwargs1 = self.levels[0].smoothers['presmoother']
+        fn2, kwargs2 = self.levels[0].smoothers['postsmoother']
+
+        # Rebuild presmoother
+        try:
+            setup_presmoother = eval('sm.setup_' + str(fn1))
+        except NameError:
+            raise NameError("Invalid presmoother method: ", fn1)
+        self.levels[0].presmoother = setup_presmoother(self.levels[0], **kwargs1)
+
+        # Rebuild postsmoother
+        try:
+            setup_postsmoother = eval('sm.setup_' + str(fn2))
+        except NameError:
+            raise NameError("Invalid presmoother method: ", fn2)
+        self.levels[0].postsmoother = setup_postsmoother(self.levels[0], **kwargs2)
 
     def psolve(self, b):
         """Lagacy solve interface."""

@@ -11,6 +11,7 @@ Functions
     - cgne
     - cgnr
     - cg
+    - srecg
     - bicgstab
     - steepest descent, (simple iteration)
     - minimial residual (MR), (simple iteration)

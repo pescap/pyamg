@@ -1,4 +1,4 @@
-from pyamg.krylov import bicgstab, cg, cgne, cgnr, cr, fgmres, gmres
+from pyamg.krylov import bicgstab, cg, cgne, cgnr, cr, fgmres, gmres, srecg
 from pyamg.krylov._gmres_householder import gmres_householder
 from pyamg.krylov._gmres_mgs import gmres_mgs
 from numpy import array, zeros, ones
@@ -24,6 +24,7 @@ class TestKrylov(TestCase):
         self.orth = [cgne]
         self.inexact = [bicgstab]
         self.spd_orth = [cg]
+        self.spd_orth_enlarged = [srecg]
 
         # 1x1
         A = mat([[1.2]])
@@ -197,6 +198,19 @@ class TestKrylov(TestCase):
                 assert_equal((norm(soln - xNew)/norm(soln - x0)) <
                              case['reduction_factor'], True,
                              err_msg='Orthogonal Krylov Method Failed Test')
+
+        for method in self.spd_orth_enlarged:
+            for case in self.spd_cases:
+                A = case['A']
+                b = case['b']
+                x0 = case['x0']
+                (xNew, flag) = method(A, b, x0=x0, tol=case['tol'],
+                                      maxiter=case['maxiter'])
+                xNew = xNew.reshape(-1, 1)
+                soln = solve(A, b)
+                assert_equal((norm(soln - xNew)/norm(soln - x0)) <
+                             case['reduction_factor'], True,
+                             err_msg='Enlarged Krylov Method Failed Test')
 
         # Assume that Inexact Methods reduce the residual for these examples
         for method in self.inexact:

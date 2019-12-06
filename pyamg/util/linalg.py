@@ -1,4 +1,4 @@
-''' Linear Algebra Helper Routines '''
+"""Linear Algebra Helper Routines."""
 from __future__ import print_function
 
 
@@ -17,8 +17,7 @@ __all__ = ['approximate_spectral_radius', 'infinity_norm', 'norm',
 
 
 def norm(x, pnorm='2'):
-    """
-    2-norm of a vector
+    """2-norm of a vector.
 
     Parameters
     ----------
@@ -45,8 +44,8 @@ def norm(x, pnorm='2'):
     See Also
     --------
     scipy.linalg.norm : scipy general matrix or vector norm
-    """
 
+    """
     # TODO check dimensions of x
     # TODO speedup complex case
 
@@ -61,8 +60,7 @@ def norm(x, pnorm='2'):
 
 
 def infinity_norm(A):
-    """
-    Infinity norm of a matrix (maximum absolute row sum).
+    """Infinity norm of a matrix (maximum absolute row sum).
 
     Parameters
     ----------
@@ -95,8 +93,8 @@ def infinity_norm(A):
     >>> A = spdiags(data,[-1,0,1],n,n)
     >>> print infinity_norm(A)
     4.0
-    """
 
+    """
     if sparse.isspmatrix_csr(A) or sparse.isspmatrix_csc(A):
         # avoid copying index and ptr arrays
         abs_A = A.__class__((np.abs(A.data), A.indices, A.indptr),
@@ -106,19 +104,17 @@ def infinity_norm(A):
         return (abs(A) * np.ones((A.shape[1]), dtype=A.dtype)).max()
     else:
         return np.dot(np.abs(A), np.ones((A.shape[1],),
-                      dtype=A.dtype)).max()
+                                         dtype=A.dtype)).max()
 
 
 def residual_norm(A, x, b):
-    """Compute ||b - A*x||"""
-
-    return np.linalg.norm(b - A * x, axis=0)
+    """Compute ||b - A*x||."""
+    #return np.linalg.norm(b - A * x, axis=0) # From multiple-rhs
+    return norm(np.ravel(b) - A*np.ravel(x))
 
 
 def axpy(x, y, a=1.0):
-    """
-    Quick level-1 call to BLAS
-    y = a*x+y
+    """Quick level-1 call to BLAS y = a*x+y.
 
     Parameters
     ----------
@@ -138,6 +134,7 @@ def axpy(x, y, a=1.0):
     -----
     The call to get_blas_funcs automatically determines the prefix for the blas
     call.
+
     """
     from scipy.linalg import get_blas_funcs
 
@@ -175,16 +172,17 @@ def axpy(x, y, a=1.0):
 
 def _approximate_eigenvalues(A, tol, maxiter, symmetric=None,
                              initial_guess=None):
-    """Used by approximate_spectral_radius and condest
+    """Apprixmate eigenvalues.
 
-       Returns [W, E, H, V, breakdown_flag], where W and E are the eigenvectors
-       and eigenvalues of the Hessenberg matrix H, respectively, and V is the
-       Krylov space.  breakdown_flag denotes whether Lanczos/Arnoldi suffered
-       breakdown.  E is therefore the approximate eigenvalues of A.
+    Used by approximate_spectral_radius and condest.
 
-       To obtain approximate eigenvectors of A, compute V*W.
-       """
+    Returns [W, E, H, V, breakdown_flag], where W and E are the eigenvectors
+    and eigenvalues of the Hessenberg matrix H, respectively, and V is the
+    Krylov space.  breakdown_flag denotes whether Lanczos/Arnoldi suffered
+    breakdown.  E is therefore the approximate eigenvalues of A.
 
+    To obtain approximate eigenvectors of A, compute V*W.
+    """
     from scipy.sparse.linalg import aslinearoperator
 
     A = aslinearoperator(A)  # A could be dense or sparse, or something weird
@@ -285,12 +283,10 @@ def _approximate_eigenvalues(A, tol, maxiter, symmetric=None,
 def approximate_spectral_radius(A, tol=0.01, maxiter=15, restart=5,
                                 symmetric=None, initial_guess=None,
                                 return_vector=False):
-    """
-    Approximate the spectral radius of a matrix
+    """Approximate the spectral radius of a matrix.
 
     Parameters
     ----------
-
     A : {dense or sparse matrix}
         E.g. csr_matrix, csc_matrix, ndarray, etc.
     tol : {scalar}
@@ -304,16 +300,13 @@ def approximate_spectral_radius(A, tol=0.01, maxiter=15, restart=5,
         Arnoldi once, using the maximal eigenvector from the first Arnoldi
         process as the initial guess.
     symmetric : {boolean}
-        True  - if A is symmetric
-                Lanczos iteration is used (more efficient)
-        False - if A is non-symmetric (default
-                Arnoldi iteration is used (less efficient)
+        True  - if A is symmetric Lanczos iteration is used (more efficient)
+        False - if A is non-symmetric Arnoldi iteration is used (less efficient)
     initial_guess : {array|None}
         If n x 1 array, then use as initial guess for Arnoldi/Lanczos.
         If None, then use a random initial guess.
     return_vector : {boolean}
-        True - return an approximate dominant eigenvector, in addition to the
-               spectral radius.
+        True - return an approximate dominant eigenvector, in addition to the spectral radius.
         False - Do not return the approximate dominant eigenvector
 
     Returns
@@ -347,8 +340,8 @@ def approximate_spectral_radius(A, tol=0.01, maxiter=15, restart=5,
     1.0
     >>> print max([norm(x) for x in eigvals(A)])
     1.0
-    """
 
+    """
     if not hasattr(A, 'rho') or return_vector:
         # somehow more restart causes a nonsymmetric case to fail...look at
         # this what about A.dtype=int?  convert somehow?
@@ -420,7 +413,7 @@ def approximate_spectral_radius(A, tol=0.01, maxiter=15, restart=5,
 
 
 def condest(A, tol=0.1, maxiter=25, symmetric=False):
-    """Estimates the condition number of A
+    r"""Estimates the condition number of A.
 
     Parameters
     ----------
@@ -456,7 +449,6 @@ def condest(A, tol=0.1, maxiter=25, symmetric=False):
     2.0
 
     """
-
     [evect, ev, H, V, breakdown_flag] =\
         _approximate_eigenvalues(A, tol, maxiter, symmetric)
 
@@ -464,7 +456,7 @@ def condest(A, tol=0.1, maxiter=25, symmetric=False):
 
 
 def cond(A):
-    """Returns condition number of A
+    """Return condition number of A.
 
     Parameters
     ----------
@@ -493,12 +485,11 @@ def cond(A):
     2.0
 
     """
-
     if A.shape[0] != A.shape[1]:
         raise ValueError('expected square matrix')
 
     if sparse.isspmatrix(A):
-        A = A.todense()
+        A = A.toarray()
 
     # 2-Norm Condition Number
     from scipy.linalg import svd
@@ -508,7 +499,7 @@ def cond(A):
 
 
 def ishermitian(A, fast_check=True, tol=1e-6, verbose=False):
-    """Returns True if A is Hermitian to within tol
+    r"""Return True if A is Hermitian to within tol.
 
     Parameters
     ----------
@@ -517,14 +508,14 @@ def ishermitian(A, fast_check=True, tol=1e-6, verbose=False):
     fast_check : {bool}
         If True, use the heuristic < Ax, y> = < x, Ay>
         for random vectors x and y to check for conjugate symmetry.
-        If False, compute A - A.H.
+        If False, compute A - A.conj().T.
     tol : {float}
         Symmetry tolerance
 
     verbose: {bool}
         prints
-        max( \|A - A.H\| )       if nonhermitian and fast_check=False
-        abs( <Ax, y> - <x, Ay> ) if nonhermitian and fast_check=False
+        max( \|A - A.conj().T\| ) if nonhermitian and fast_check=False..
+        abs( <Ax, y> - <x, Ay> )  if nonhermitian and fast_check=False
 
     Returns
     -------
@@ -545,10 +536,11 @@ def ishermitian(A, fast_check=True, tol=1e-6, verbose=False):
     >>> from pyamg.gallery import poisson
     >>> ishermitian(poisson((10,10)))
     True
+
     """
-    # convert to matrix type
+    # convert to array type
     if not sparse.isspmatrix(A):
-        A = np.asmatrix(A)
+        A = np.asarray(A)
 
     if fast_check:
         x = sp.rand(A.shape[0], 1)
@@ -556,16 +548,16 @@ def ishermitian(A, fast_check=True, tol=1e-6, verbose=False):
         if A.dtype == complex:
             x = x + 1.0j*sp.rand(A.shape[0], 1)
             y = y + 1.0j*sp.rand(A.shape[0], 1)
-        xAy = np.dot((A*x).conjugate().T, y)
-        xAty = np.dot(x.conjugate().T, A*y)
+        xAy = np.dot((A.dot(x)).conjugate().T, y)
+        xAty = np.dot(x.conjugate().T, A.dot(y))
         diff = float(np.abs(xAy - xAty) / np.sqrt(np.abs(xAy*xAty)))
 
     else:
-        # compute the difference, A - A.H
+        # compute the difference, A - A.conj().T
         if sparse.isspmatrix(A):
-            diff = np.ravel((A - A.H).data)
+            diff = np.ravel((A - A.conj().T).data)
         else:
-            diff = np.ravel(A - A.H)
+            diff = np.ravel(A - A.conj().T)
 
         if np.max(diff.shape) == 0:
             diff = 0
@@ -584,15 +576,14 @@ def ishermitian(A, fast_check=True, tol=1e-6, verbose=False):
 
 
 def pinv_array(a, cond=None):
-    """Calculate the Moore-Penrose pseudo inverse of each block of
-        the three dimensional array a.
+    """Calculate the Moore-Penrose pseudo inverse of each block of the three dimensional array a.
 
     Parameters
     ----------
     a   : {dense array}
         Is of size (n, m, m)
     cond : {float}
-        Used by *gelss to filter numerically zeros singular values.
+        Used by gelss to filter numerically zeros singular values.
         If None, a suitable value is chosen for you.
 
     Returns
@@ -615,7 +606,6 @@ def pinv_array(a, cond=None):
     >>> pinv_array(a)
 
     """
-
     n = a.shape[0]
     m = a.shape[1]
 

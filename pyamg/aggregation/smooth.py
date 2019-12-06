@@ -1,4 +1,4 @@
-"""Methods to smooth tentative prolongation operators"""
+"""Methods to smooth tentative prolongation operators."""
 from __future__ import print_function
 
 
@@ -18,17 +18,16 @@ __all__ = ['jacobi_prolongation_smoother', 'richardson_prolongation_smoother',
 
 # Satisfy_Constraints is a helper function for prolongation smoothing routines
 def Satisfy_Constraints(U, B, BtBinv):
-    """U is the prolongator update.
-       Project out components of U such that U*B = 0
+    """U is the prolongator update.  Project out components of U such that U*B = 0.
 
     Parameters
     ----------
-    U : {bsr_matrix}
+    U : bsr_matrix
         m x n sparse bsr matrix
         Update to the prolongator
-    B : {array}
+    B : array
         n x k array of the coarse grid near nullspace vectors
-    BtBinv : {array}
+    BtBinv : array
         Local inv(B_i.H*B_i) matrices for each supernode, i
         B_i is B restricted to the sparsity pattern of supernode i in U
 
@@ -44,7 +43,6 @@ def Satisfy_Constraints(U, B, BtBinv):
     pyamg.aggregation.smooth.energy_prolongation_smoother
 
     """
-
     RowsPerBlock = U.blocksize[0]
     ColsPerBlock = U.blocksize[1]
     num_block_rows = int(U.shape[0]/RowsPerBlock)
@@ -65,25 +63,25 @@ def Satisfy_Constraints(U, B, BtBinv):
 
 def jacobi_prolongation_smoother(S, T, C, B, omega=4.0/3.0, degree=1,
                                  filter=False, weighting='diagonal'):
-    """Jacobi prolongation smoother
+    """Jacobi prolongation smoother.
 
     Parameters
     ----------
-    S : {csr_matrix, bsr_matrix}
+    S : csr_matrix, bsr_matrix
         Sparse NxN matrix used for smoothing.  Typically, A.
-    T : {csr_matrix, bsr_matrix}
+    T : csr_matrix, bsr_matrix
         Tentative prolongator
-    C : {csr_matrix, bsr_matrix}
+    C : csr_matrix, bsr_matrix
         Strength-of-connection matrix
-    B : {array}
+    B : array
         Near nullspace modes for the coarse grid such that T*B
         exactly reproduces the fine grid near nullspace modes
-    omega : {scalar}
+    omega : scalar
         Damping parameter
-    filter : {boolean}
+    filter : boolean
         If true, filter S before smoothing T.  This option can greatly control
         complexity.
-    weighting : {string}
+    weighting : string
         'block', 'diagonal' or 'local' weighting for constructing the Jacobi D
         'local' Uses a local row-wise weight based on the Gershgorin estimate.
         Avoids any potential under-damping due to inaccurate spectral radius
@@ -93,7 +91,7 @@ def jacobi_prolongation_smoother(S, T, C, B, omega=4.0/3.0, degree=1,
 
     Returns
     -------
-    P : {csr_matrix, bsr_matrix}
+    P : csr_matrix, bsr_matrix
         Smoothed (final) prolongator defined by P = (I - omega/rho(K) K) * T
         where K = diag(S)^-1 * S and rho(K) is an approximation to the
         spectral radius of K.
@@ -115,7 +113,7 @@ def jacobi_prolongation_smoother(S, T, C, B, omega=4.0/3.0, degree=1,
     >>> row = np.arange(0,6)
     >>> col = np.kron([0,1],np.ones((3,)))
     >>> T = coo_matrix((data,(row,col)),shape=(6,2)).tocsr()
-    >>> T.todense()
+    >>> T.toarray()
     matrix([[ 1.,  0.],
             [ 1.,  0.],
             [ 1.,  0.],
@@ -124,7 +122,7 @@ def jacobi_prolongation_smoother(S, T, C, B, omega=4.0/3.0, degree=1,
             [ 0.,  1.]])
     >>> A = poisson((6,),format='csr')
     >>> P = jacobi_prolongation_smoother(A,T,A,np.ones((2,1)))
-    >>> P.todense()
+    >>> P.toarray()
     matrix([[ 0.64930164,  0.        ],
             [ 1.        ,  0.        ],
             [ 0.64930164,  0.35069836],
@@ -133,7 +131,6 @@ def jacobi_prolongation_smoother(S, T, C, B, omega=4.0/3.0, degree=1,
             [ 0.        ,  0.64930164]])
 
     """
-
     # preprocess weighting
     if weighting == 'block':
         if sparse.isspmatrix_csr(S):
@@ -208,22 +205,22 @@ def jacobi_prolongation_smoother(S, T, C, B, omega=4.0/3.0, degree=1,
 
 
 def richardson_prolongation_smoother(S, T, omega=4.0/3.0, degree=1):
-    """Richardson prolongation smoother
+    """Richardson prolongation smoother.
 
     Parameters
     ----------
-    S : {csr_matrix, bsr_matrix}
+    S : csr_matrix, bsr_matrix
         Sparse NxN matrix used for smoothing.  Typically, A or the
         "filtered matrix" obtained from A by lumping weak connections
         onto the diagonal of A.
-    T : {csr_matrix, bsr_matrix}
+    T : csr_matrix, bsr_matrix
         Tentative prolongator
-    omega : {scalar}
+    omega : scalar
         Damping parameter
 
     Returns
     -------
-    P : {csr_matrix, bsr_matrix}
+    P : csr_matrix, bsr_matrix
         Smoothed (final) prolongator defined by P = (I - omega/rho(S) S) * T
         where rho(S) is an approximation to the spectral radius of S.
 
@@ -245,7 +242,7 @@ def richardson_prolongation_smoother(S, T, omega=4.0/3.0, degree=1):
     >>> row = np.arange(0,6)
     >>> col = np.kron([0,1],np.ones((3,)))
     >>> T = coo_matrix((data,(row,col)),shape=(6,2)).tocsr()
-    >>> T.todense()
+    >>> T.toarray()
     matrix([[ 1.,  0.],
             [ 1.,  0.],
             [ 1.,  0.],
@@ -254,7 +251,7 @@ def richardson_prolongation_smoother(S, T, omega=4.0/3.0, degree=1):
             [ 0.,  1.]])
     >>> A = poisson((6,),format='csr')
     >>> P = richardson_prolongation_smoother(A,T)
-    >>> P.todense()
+    >>> P.toarray()
     matrix([[ 0.64930164,  0.        ],
             [ 1.        ,  0.        ],
             [ 0.64930164,  0.35069836],
@@ -263,7 +260,6 @@ def richardson_prolongation_smoother(S, T, omega=4.0/3.0, degree=1):
             [ 0.        ,  0.64930164]])
 
     """
-
     weight = omega/approximate_spectral_radius(S)
 
     P = T
@@ -281,29 +277,24 @@ prolongator for use in SA
 
 def cg_prolongation_smoothing(A, T, B, BtBinv, Sparsity_Pattern, maxiter, tol,
                               weighting='local', Cpt_params=None):
-    '''
-    Helper function for energy_prolongation_smoother(...)
-
-    Use CG to smooth T by solving A T = 0, subject to nullspace
-    and sparsity constraints.
+    """Use CG to smooth T by solving A T = 0, subject to nullspace and sparsity constraints.
 
     Parameters
     ----------
-
-    A : {csr_matrix, bsr_matrix}
+    A : csr_matrix, bsr_matrix
         SPD sparse NxN matrix
-    T : {bsr_matrix}
+    T : bsr_matrix
         Tentative prolongator, a NxM sparse matrix (M < N).
         This is initial guess for the equation A T = 0.
         Assumed that T B_c = B_f
-    B : {array}
+    B : array
         Near-nullspace modes for coarse grid, i.e., B_c.
         Has shape (M,k) where k is the number of coarse candidate vectors.
-    BtBinv : {array}
+    BtBinv : array
         3 dimensional array such that,
         BtBinv[i] = pinv(B_i.H Bi), and B_i is B restricted
         to the neighborhood (in the matrix graph) of dof of i.
-    Sparsity_Pattern : {csr_matrix, bsr_matrix}
+    Sparsity_Pattern : csr_matrix, bsr_matrix
         Sparse NxM matrix
         This is the sparsity pattern constraint to enforce on the
         eventual prolongator
@@ -311,10 +302,10 @@ def cg_prolongation_smoothing(A, T, B, BtBinv, Sparsity_Pattern, maxiter, tol,
         maximum number of iterations
     tol : float
         residual tolerance for A T = 0
-    weighting : {string}
+    weighting : string
         'block', 'diagonal' or 'local' construction of the diagonal
         preconditioning
-    Cpt_params : {tuple}
+    Cpt_params : tuple
         Tuple of the form (bool, dict).  If the Cpt_params[0] = False, then
         the standard SA prolongation smoothing is carried out.  If True, then
         dict must be a dictionary of parameters containing, (1) P_I: P_I.T is
@@ -324,7 +315,7 @@ def cg_prolongation_smoothing(A, T, B, BtBinv, Sparsity_Pattern, maxiter, tol,
 
     Returns
     -------
-    T : {bsr_matrix}
+    T : bsr_matrix
         Smoothed prolongator using conjugate gradients to solve A T = 0,
         subject to the constraints, T B_c = B_f, and T has no nonzero
         outside of the sparsity pattern in Sparsity_Pattern.
@@ -334,12 +325,11 @@ def cg_prolongation_smoothing(A, T, B, BtBinv, Sparsity_Pattern, maxiter, tol,
     The principal calling routine,
     pyamg.aggregation.smooth.energy_prolongation_smoother
 
-    '''
-
+    """
     # Preallocate
     AP = sparse.bsr_matrix((np.zeros(Sparsity_Pattern.data.shape,
-                            dtype=T.dtype),
-                           Sparsity_Pattern.indices, Sparsity_Pattern.indptr),
+                                     dtype=T.dtype),
+                            Sparsity_Pattern.indices, Sparsity_Pattern.indptr),
                            shape=(Sparsity_Pattern.shape))
 
     # CG will be run with diagonal preconditioning
@@ -458,30 +448,25 @@ def cg_prolongation_smoothing(A, T, B, BtBinv, Sparsity_Pattern, maxiter, tol,
 
 def cgnr_prolongation_smoothing(A, T, B, BtBinv, Sparsity_Pattern, maxiter,
                                 tol, weighting='local', Cpt_params=None):
-    '''
-    Helper function for energy_prolongation_smoother(...)
-
-    Use CGNR to smooth T by solving A T = 0, subject to nullspace
-    and sparsity constraints.
+    """Use CGNR to smooth T by solving A T = 0, subject to nullspace and sparsity constraints.
 
     Parameters
     ----------
-
-    A : {csr_matrix, bsr_matrix}
+    A : csr_matrix, bsr_matrix
         SPD sparse NxN matrix
         Should be at least nonsymmetric or indefinite
-    T : {bsr_matrix}
+    T : bsr_matrix
         Tentative prolongator, a NxM sparse matrix (M < N).
         This is initial guess for the equation A T = 0.
         Assumed that T B_c = B_f
-    B : {array}
+    B : array
         Near-nullspace modes for coarse grid, i.e., B_c.
         Has shape (M,k) where k is the number of coarse candidate vectors.
-    BtBinv : {array}
+    BtBinv : array
         3 dimensional array such that,
         BtBinv[i] = pinv(B_i.H Bi), and B_i is B restricted
         to the neighborhood (in the matrix graph) of dof of i.
-    Sparsity_Pattern : {csr_matrix, bsr_matrix}
+    Sparsity_Pattern : csr_matrix, bsr_matrix
         Sparse NxM matrix
         This is the sparsity pattern constraint to enforce on the
         eventual prolongator
@@ -489,11 +474,11 @@ def cgnr_prolongation_smoothing(A, T, B, BtBinv, Sparsity_Pattern, maxiter,
         maximum number of iterations
     tol : float
         residual tolerance for A T = 0
-    weighting : {string}
+    weighting : string
         'block', 'diagonal' or 'local' construction of the diagonal
         preconditioning
         IGNORED here, only 'diagonal' preconditioning is used.
-    Cpt_params : {tuple}
+    Cpt_params : tuple
         Tuple of the form (bool, dict).  If the Cpt_params[0] = False, then
         the standard SA prolongation smoothing is carried out.  If True, then
         dict must be a dictionary of parameters containing, (1) P_I: P_I.T is
@@ -503,7 +488,7 @@ def cgnr_prolongation_smoothing(A, T, B, BtBinv, Sparsity_Pattern, maxiter,
 
     Returns
     -------
-    T : {bsr_matrix}
+    T : bsr_matrix
         Smoothed prolongator using CGNR to solve A T = 0,
         subject to the constraints, T B_c = B_f, and T has no nonzero
         outside of the sparsity pattern in Sparsity_Pattern.
@@ -513,8 +498,7 @@ def cgnr_prolongation_smoothing(A, T, B, BtBinv, Sparsity_Pattern, maxiter,
     The principal calling routine,
     pyamg.aggregation.smooth.energy_prolongation_smoother
 
-    '''
-
+    """
     # For non-SPD system, apply CG on Normal Equations with Diagonal
     # Preconditioning (requires transpose)
     Ah = A.H
@@ -637,16 +621,15 @@ def cgnr_prolongation_smoothing(A, T, B, BtBinv, Sparsity_Pattern, maxiter,
 
 
 def apply_givens(Q, v, k):
-    '''
-    Apply the first k Givens rotations in Q to v
+    """Apply the first k Givens rotations in Q to v.
 
     Parameters
     ----------
-    Q : {list}
+    Q : list
         list of consecutive 2x2 Givens rotations
-    v : {array}
+    v : array
         vector to apply the rotations to
-    k : {int}
+    k : int
         number of rotations to apply.
 
     Returns
@@ -658,8 +641,8 @@ def apply_givens(Q, v, k):
     This routine is specialized for GMRES.  It assumes that the first Givens
     rotation is for dofs 0 and 1, the second Givens rotation is for dofs 1 and
     2, and so on.
-    '''
 
+    """
     for j in range(k):
         Qloc = Q[j]
         v[j:j+2] = sp.dot(Qloc, v[j:j+2])
@@ -667,30 +650,25 @@ def apply_givens(Q, v, k):
 
 def gmres_prolongation_smoothing(A, T, B, BtBinv, Sparsity_Pattern, maxiter,
                                  tol, weighting='local', Cpt_params=None):
-    '''
-    Helper function for energy_prolongation_smoother(...).
-
-    Use GMRES to smooth T by solving A T = 0, subject to nullspace
-    and sparsity constraints.
+    """Use GMRES to smooth T by solving A T = 0, subject to nullspace and sparsity constraints.
 
     Parameters
     ----------
-
-    A : {csr_matrix, bsr_matrix}
+    A : csr_matrix, bsr_matrix
         SPD sparse NxN matrix
         Should be at least nonsymmetric or indefinite
-    T : {bsr_matrix}
+    T : bsr_matrix
         Tentative prolongator, a NxM sparse matrix (M < N).
         This is initial guess for the equation A T = 0.
         Assumed that T B_c = B_f
-    B : {array}
+    B : array
         Near-nullspace modes for coarse grid, i.e., B_c.
         Has shape (M,k) where k is the number of coarse candidate vectors.
-    BtBinv : {array}
+    BtBinv : array
         3 dimensional array such that,
         BtBinv[i] = pinv(B_i.H Bi), and B_i is B restricted
         to the neighborhood (in the matrix graph) of dof of i.
-    Sparsity_Pattern : {csr_matrix, bsr_matrix}
+    Sparsity_Pattern : csr_matrix, bsr_matrix
         Sparse NxM matrix
         This is the sparsity pattern constraint to enforce on the
         eventual prolongator
@@ -698,10 +676,10 @@ def gmres_prolongation_smoothing(A, T, B, BtBinv, Sparsity_Pattern, maxiter,
         maximum number of iterations
     tol : float
         residual tolerance for A T = 0
-    weighting : {string}
+    weighting : string
         'block', 'diagonal' or 'local' construction of the diagonal
         preconditioning
-    Cpt_params : {tuple}
+    Cpt_params : tuple
         Tuple of the form (bool, dict).  If the Cpt_params[0] = False, then
         the standard SA prolongation smoothing is carried out.  If True, then
         dict must be a dictionary of parameters containing, (1) P_I: P_I.T is
@@ -711,7 +689,7 @@ def gmres_prolongation_smoothing(A, T, B, BtBinv, Sparsity_Pattern, maxiter,
 
     Returns
     -------
-    T : {bsr_matrix}
+    T : bsr_matrix
         Smoothed prolongator using GMRES to solve A T = 0,
         subject to the constraints, T B_c = B_f, and T has no nonzero
         outside of the sparsity pattern in Sparsity_Pattern.
@@ -721,8 +699,7 @@ def gmres_prolongation_smoothing(A, T, B, BtBinv, Sparsity_Pattern, maxiter,
     The principal calling routine,
     pyamg.aggregation.smooth.energy_prolongation_smoother
 
-    '''
-
+    """
     # For non-SPD system, apply GMRES with Diagonal Preconditioning
 
     # Preallocate space for new search directions
@@ -904,26 +881,26 @@ def energy_prolongation_smoother(A, T, Atilde, B, Bf, Cpt_params,
                                  krylov='cg', maxiter=4, tol=1e-8,
                                  degree=1, weighting='local',
                                  prefilter={}, postfilter={}):
-    """Minimize the energy of the coarse basis functions (columns of T).  Both
-    root-node and non-root-node style prolongation smoothing is available, see
-    Cpt_params description below.
+    """Minimize the energy of the coarse basis functions (columns of T).
+
+    Both root-node and non-root-node style prolongation smoothing is available,
+    see Cpt_params description below.
 
     Parameters
     ----------
-
-    A : {csr_matrix, bsr_matrix}
+    A : csr_matrix, bsr_matrix
         Sparse NxN matrix
-    T : {bsr_matrix}
+    T : bsr_matrix
         Tentative prolongator, a NxM sparse matrix (M < N)
-    Atilde : {csr_matrix}
+    Atilde : csr_matrix
         Strength of connection matrix
-    B : {array}
+    B : array
         Near-nullspace modes for coarse grid.  Has shape (M,k) where
         k is the number of coarse candidate vectors.
-    Bf : {array}
+    Bf : array
         Near-nullspace modes for fine grid.  Has shape (N,k) where
         k is the number of coarse candidate vectors.
-    Cpt_params : {tuple}
+    Cpt_params : tuple
         Tuple of the form (bool, dict).  If the Cpt_params[0] = False, then the
         standard SA prolongation smoothing is carried out.  If True, then
         root-node style prolongation smoothing is carried out.  The dict must
@@ -931,50 +908,46 @@ def energy_prolongation_smoother(A, T, Atilde, B, Bf, Cpt_params,
         injection matrix for the Cpts, (2) I_F is an identity matrix for only the
         F-points (i.e. I, but with zero rows and columns for C-points) and I_C is
         the C-point analogue to I_F.  See Notes below for more information.
-    krylov : {string}
+    krylov : string
         'cg' for SPD systems.  Solve A T = 0 in a constraint space with CG
         'cgnr' for nonsymmetric and/or indefinite systems.
-         Solve A T = 0 in a constraint space with CGNR
+        Solve A T = 0 in a constraint space with CGNR
         'gmres' for nonsymmetric and/or indefinite systems.
-         Solve A T = 0 in a constraint space with GMRES
+        Solve A T = 0 in a constraint space with GMRES
     maxiter : integer
         Number of energy minimization steps to apply to the prolongator
-    tol : {scalar}
+    tol : scalar
         Minimization tolerance
-    degree : {int}
+    degree : int
         Generate sparsity pattern for P based on (Atilde^degree T)
-    weighting : {string}
+    weighting : string
         'block', 'diagonal' or 'local' construction of the diagonal preconditioning
         'local' Uses a local row-wise weight based on the Gershgorin estimate.
         Avoids any potential under-damping due to inaccurate spectral
         radius estimates.
         'block' Uses a block diagonal inverse of A if A is BSR.
         'diagonal' Uses the inverse of the diagonal of A
-    prefilter : {dictionary} : Default {}
+    prefilter : dictionary
         Filter elements by row in sparsity pattern for P to reduce operator and
         setup complexity. If None or an empty dictionary, then no dropping in P
         is done.  If postfilter has key 'k', then the largest 'k' entries  are
         kept in each row.  If postfilter has key 'theta', all entries such that
-        .. math::
-            P[i,j] < kwargs['theta']*max(abs(P[i,:]))
-
+        :math:`P[i,j] < kwargs['theta']*max(abs(P[i,:]))`
         are dropped.  If postfilter['k'] and postfiler['theta'] are present,
         then they are used with the union of their patterns.
-    postfilter : {dictionary} : Default {}
+    postfilter : dictionary
         Filters elements by row in smoothed P to reduce operator complexity.
         Only supported if using the rootnode_solver. If None or an empty
         dictionary, no dropping in P is done. If postfilter has key 'k',
         then the largest 'k' entries  are kept in each row.  If postfilter
         has key 'theta', all entries such that
-        .. math::
-            P[i,j] < kwargs['theta']*max(abs(P[i,:]))
-
+        :math::`P[i,j] < kwargs['theta']*max(abs(P[i,:]))`
         are dropped.  If postfilter['k'] and postfiler['theta'] are present,
         then they are used with the union of their patterns.
 
     Returns
     -------
-    T : {bsr_matrix}
+    T : bsr_matrix
         Smoothed prolongator
 
     Notes
@@ -982,12 +955,11 @@ def energy_prolongation_smoother(A, T, Atilde, B, Bf, Cpt_params,
     Only 'diagonal' weighting is supported for the CGNR method, because
     we are working with A^* A and not A.
 
-    When Cpt_params[0] == True, root-node style prolongation smoothing
-    is used to minimize the energy of columns of T.  Essentially, an
-    identity block is maintained in T, corresponding to injection from
-    the coarse-grid to the fine-grid root-nodes.  See [2011cOlScTu]_ for more details,
-    and see util.utils.get_Cpt_params for the helper function to generate
-    Cpt_params.
+    When Cpt_params[0] == True, root-node style prolongation smoothing is used
+    to minimize the energy of columns of T.  Essentially, an identity block is
+    maintained in T, corresponding to injection from the coarse-grid to the
+    fine-grid root-nodes.  See [2011OlScTu]_ for more details, and see
+    util.utils.get_Cpt_params for the helper function to generate Cpt_params.
 
     If Cpt_params[0] == False, the energy of columns of T are still
     minimized, but without maintaining the identity block.
@@ -1004,7 +976,7 @@ def energy_prolongation_smoother(A, T, Atilde, B, Bf, Cpt_params,
     >>> row = np.arange(0,6)
     >>> col = np.kron([0,1],np.ones((3,)))
     >>> T = coo_matrix((data,(row,col)),shape=(6,2)).tocsr()
-    >>> print T.todense()
+    >>> print T.toarray()
     [[ 1.  0.]
      [ 1.  0.]
      [ 1.  0.]
@@ -1014,7 +986,7 @@ def energy_prolongation_smoother(A, T, Atilde, B, Bf, Cpt_params,
     >>> A = poisson((6,),format='csr')
     >>> B = np.ones((2,1),dtype=float)
     >>> P = energy_prolongation_smoother(A,T,A,B, None, (False,{}))
-    >>> print P.todense()
+    >>> print P.toarray()
     [[ 1.          0.        ]
      [ 1.          0.        ]
      [ 0.66666667  0.33333333]
@@ -1029,14 +1001,13 @@ def energy_prolongation_smoother(A, T, Atilde, B, Bf, Cpt_params,
        Computing 62, 205-228, 1999
        http://dx.doi.org/10.1007/s006070050022
 
-    .. [2011OclScTu] Olson, L. and Schroder, J. and Tuminaro, R.,
+    .. [2011OlScTu] Olson, L. and Schroder, J. and Tuminaro, R.,
        "A general interpolation strategy for algebraic
        multigrid using energy minimization", SIAM Journal
        on Scientific Computing (SISC), vol. 33, pp.
        966--991, 2011.
 
     """
-
     # Test Inputs
     if maxiter < 0:
         raise ValueError('maxiter must be > 0')

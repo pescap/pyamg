@@ -1,4 +1,4 @@
-"""Construct sparse matrix from a local stencil"""
+"""Construct sparse matrix from a local stencil."""
 from __future__ import print_function
 
 
@@ -9,7 +9,7 @@ __all__ = ['stencil_grid']
 
 
 def stencil_grid(S, grid, dtype=None, format=None):
-    """Construct a sparse matrix form a local matrix stencil
+    """Construct a sparse matrix form a local matrix stencil.
 
     Parameters
     ----------
@@ -44,7 +44,7 @@ def stencil_grid(S, grid, dtype=None, format=None):
     >>> stencil = [-1,2,-1]  # 1D Poisson stencil
     >>> grid = (5,)          # 1D grid with 5 vertices
     >>> A = stencil_grid(stencil, grid, dtype=float, format='csr')
-    >>> A.todense()
+    >>> A.toarray()
     matrix([[ 2., -1.,  0.,  0.,  0.],
             [-1.,  2., -1.,  0.,  0.],
             [ 0., -1.,  2., -1.,  0.],
@@ -54,7 +54,7 @@ def stencil_grid(S, grid, dtype=None, format=None):
     >>> stencil = [[0,-1,0],[-1,4,-1],[0,-1,0]] # 2D Poisson stencil
     >>> grid = (3,3)                            # 2D grid with shape 3x3
     >>> A = stencil_grid(stencil, grid, dtype=float, format='csr')
-    >>> A.todense()
+    >>> A.toarray()
     matrix([[ 4., -1.,  0., -1.,  0.,  0.,  0.,  0.,  0.],
             [-1.,  4., -1.,  0., -1.,  0.,  0.,  0.,  0.],
             [ 0., -1.,  4.,  0.,  0., -1.,  0.,  0.,  0.],
@@ -66,7 +66,6 @@ def stencil_grid(S, grid, dtype=None, format=None):
             [ 0.,  0.,  0.,  0.,  0., -1.,  0., -1.,  4.]])
 
     """
-
     S = np.asarray(S, dtype=dtype)
     grid = tuple(grid)
 
@@ -108,10 +107,12 @@ def stencil_grid(S, grid, dtype=None, format=None):
             if i > 0:
                 s = [slice(None)] * len(grid)
                 s[n] = slice(0, i)
+                s = tuple(s)
                 diag[s] = 0
             elif i < 0:
                 s = [slice(None)]*len(grid)
                 s[n] = slice(i, None)
+                s = tuple(s)
                 diag[s] = 0
 
     # remove diagonals that lie outside matrix
@@ -169,4 +170,4 @@ if __name__ == '__main__':
 
     A = stencil_grid(S, grid)
 
-    print(A.todense())
+    print(A.toarray())

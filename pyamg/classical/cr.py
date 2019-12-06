@@ -1,4 +1,4 @@
-"""Compatible Relaxation"""
+"""Compatible Relaxation."""
 from __future__ import print_function
 
 import numpy as np
@@ -14,7 +14,9 @@ __all__ = ['CR', 'binormalize']
 
 
 def _CRsweep(A, B, Findex, Cindex, nu, thetacr, method):
-    """ Internal function called by CR. Performs habituated or concurrent
+    """Perform CR sweeps on a target vector.
+
+    Internal function called by CR. Performs habituated or concurrent
     relaxation sweeps on target vector. Stops when either (i) very fast
     convergence, CF < 0.1*thetacr, are observed, or at least a given number
     of sweeps have been performed and the relative change in CF < 0.1.
@@ -39,8 +41,8 @@ def _CRsweep(A, B, Findex, Cindex, nu, thetacr, method):
         Convergence factor of last iteration
     e : array like
         Smoothed error vector
-    """
 
+    """
     n = A.shape[0]    # problem size
     numax = nu
     z = np.zeros((n,))
@@ -78,25 +80,25 @@ def _CRsweep(A, B, Findex, Cindex, nu, thetacr, method):
 
 def CR(A, method='habituated', B=None, nu=3, thetacr=0.7,
         thetacs='auto', maxiter=20, verbose=False):
-    """Use Compatible Relaxation to compute a C/F splitting
+    """Use Compatible Relaxation to compute a C/F splitting.
 
     Parameters
     ----------
     A : csr_matrix
         sparse matrix (n x n) usually matrix A of Ax=b
-    method : {'habituated','concurrent'}, Default 'habituated'
+    method : {'habituated','concurrent'}
         Method used during relaxation:
             - concurrent: GS relaxation on F-points, leaving e_c = 0
             - habituated: full relaxation, setting e_c = 0
-    B : {array like} : Default None
+    B : array like
         Target algebraically smooth vector used in CR. If multiple
         vectors passed in, only first one is used. If B=None, the
         constant vector is used.
-    nu : {int} : Default 3
+    nu : int
         Number of smoothing iterations to apply each CR sweep.
-    thetacr : {float} : Default [0.7]
+    thetacr : float
         Desired convergence factor of relaxations, 0 < thetacr < 1.
-    thetacs : {list, float, 'auto'} : Default 'auto'
+    thetacs : list, float, 'auto'
         Threshold value, 0 < thetacs < 1, to consider nodes from
         candidate set for coarse grid. If e[i] > thetacs for relaxed
         error vector, e, node i is considered for the coarse grid.
@@ -104,10 +106,10 @@ def CR(A, method='habituated', B=None, nu=3, thetacr=0.7,
         list of floats to be used on progressive iterations, or as
         string 'auto,' wherein each iteration thetacs = 1 - rho, for
         convergence factor rho from most recent smoothing.
-    maxiter : {int} : Default 20
+    maxiter : int
         Maximum number of CR iterations (updating of C/F splitting)
         to do.
-    verbose : {bool} : Default False
+    verbose : bool
         If true, print iteration number, convergence factor and
         coarsening factor after each iteration.
 
@@ -128,8 +130,8 @@ def CR(A, method='habituated', B=None, nu=3, thetacr=0.7,
     >>> from cr import CR
     >>> A = poisson((20,20),format='csr')
     >>> splitting = CR(A)
-    """
 
+    """
     n = A.shape[0]    # problem size
 
     if thetacs == 'auto':
@@ -316,7 +318,7 @@ def binormalize(A, tol=1e-5, maxiter=10):
 
 
 def rowsum_stdev(x, beta):
-    """Compute row sum standard deviation
+    r"""Compute row sum standard deviation.
 
     Compute for approximation x, the std dev of the row sums
     s(x) = ( 1/n \sum_k  (x_k beta_k - betabar)^2 )^(1/2)

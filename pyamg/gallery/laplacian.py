@@ -1,4 +1,4 @@
-"""Discretizations of the Poisson problem"""
+"""Discretizations of the Poisson problem."""
 from __future__ import absolute_import
 
 import numpy as np
@@ -10,7 +10,7 @@ __all__ = ['poisson', 'gauge_laplacian']
 
 
 def poisson(grid, spacing=None, dtype=float, format=None, type='FD'):
-    """Returns a sparse matrix for the N-dimensional Poisson problem
+    """Return a sparse matrix for the N-dimensional Poisson problem.
 
     The matrix represents a finite Difference approximation to the
     Poisson problem on a regular n-dimensional grid with unit grid
@@ -29,14 +29,14 @@ def poisson(grid, spacing=None, dtype=float, format=None, type='FD'):
     --------
     >>> from pyamg.gallery import poisson
     >>> # 4 nodes in one dimension
-    >>> poisson( (4,) ).todense()
+    >>> poisson( (4,) ).toarray()
     matrix([[ 2., -1.,  0.,  0.],
             [-1.,  2., -1.,  0.],
             [ 0., -1.,  2., -1.],
             [ 0.,  0., -1.,  2.]])
 
     >>> # rectangular two dimensional grid
-    >>> poisson( (2,3) ).todense()
+    >>> poisson( (2,3) )toarray()
     matrix([[ 4., -1.,  0., -1.,  0.,  0.],
             [-1.,  4., -1.,  0., -1.,  0.],
             [ 0., -1.,  4.,  0.,  0., -1.],
@@ -68,27 +68,26 @@ def poisson(grid, spacing=None, dtype=float, format=None, type='FD'):
 
 
 def gauge_laplacian(npts, spacing=1.0, beta=0.1):
-    """Construct a Gauge Laplacian from Quantum Chromodynamics for
-    regular 2D grids
+    """Construct a Gauge Laplacian from Quantum Chromodynamics for regular 2D grids.
 
     Note that this function is not written efficiently, but should be
     fine for N x N grids where N is in the low hundreds.
 
     Parameters
     ----------
-    npts : {int}
+    npts : int
         number of pts in x and y directions
 
-    spacing : {float}
+    spacing : float
         grid spacing between points
 
-    beta : {float}
+    beta : float
         temperature
         Note that if beta=0, then we get the typical 5pt Laplacian stencil
 
     Returns
     -------
-    A : {csr matrix}
+    A : csr matrix
         A is Hermitian positive definite for beta > 0.0
         A is Symmetric semi-definite for beta = 0.0
 
@@ -104,7 +103,6 @@ def gauge_laplacian(npts, spacing=1.0, beta=0.1):
        Vol. 30, SIAM J. Sci. Comp, 2008
 
     """
-
     # The gauge Laplacian has the same sparsity structure as a normal
     # Laplacian, so we start out with a Poisson Operator
     N = npts

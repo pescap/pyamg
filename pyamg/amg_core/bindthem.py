@@ -122,7 +122,9 @@ def build_function(func):
             needsize = True
         elif '_size' not in p['name'] and needsize:
             # not a size, but needed one
-            raise ValueError('Expecting a _size parameter for {}'.format(p['name']))
+            raise ValueError(
+                'Expecting a _size parameter for {}'.format(
+                    p['name']))
         elif '_size' in p['name']:
             # just size, skip it
             needsize = False
@@ -131,9 +133,9 @@ def build_function(func):
             # if not a pointer, just copy it
             param = p['type'] + ' ' + p['name']
 
-        fdef += '{:>25},\n'.format(param)    # set width to 25
-
-    fdef = fdef.strip()[:-1]  # trim comma and newline
+        fdef += '{:>25}'.format(param)    # set width to 25
+        fdef += ',\n'
+    fdef = fdef[:-2]  # remove trailing comma and newline
     fdef += '\n' + ' ' * len(newcall) + ')'
     fdef += '\n{\n'
 
@@ -161,18 +163,19 @@ def build_function(func):
         fdef += '\n'
     if func['template']:
         template = func['template']
-        template = template.replace('template', '').replace('class ', '')   # template <class T> ----> <T>
+        template = template.replace('template', '').replace(
+            'class ', '')   # template <class T> ----> <T>
     else:
         template = ''
     newcall = '    return ' + func['name'] + template + '('
     fdef += newcall + '\n'
 
     # function parameters
-    for p in func['parameters']:
+    for i, p in enumerate(func['parameters']):
         if '_size' in p['name']:
             fdef = fdef.strip()
             name, s = p['name'].split('_size')
-            if s=='':
+            if s == '':
                 s = '0'
             fdef += " {}.shape({})".format(name, s)
         else:
@@ -181,8 +184,8 @@ def build_function(func):
             else:
                 name = p['name']
             fdef += '{:>25}'.format(name)
-        fdef += ',\n'
-    fdef = fdef.strip()[:-1]
+        if i < len(func['parameters'])-1:
+            fdef += ',\n'
     fdef += '\n' + ' ' * len(newcall) + ');\n}'
     return fdef
 
@@ -215,9 +218,13 @@ def build_plugin(headerfile, ch, comments, inst, remaps):
     plugin += indent + 'Methods\n'
     plugin += indent + '-------\n'
     for f in ch.functions:
-        for func in inst:
-            if f['name'] in func['functions']:
-                plugin += indent + f['name'] + '\n'
+        templated = bool(f['template'])
+        if not templated:
+            plugin += indent + f['name'] + '\n'
+        if templated:
+            for func in inst:
+                if f['name'] in func['functions']:
+                    plugin += indent + f['name'] + '\n'
     plugin += indent + ')pbdoc";\n\n'
 
     plugin += indent + 'py::options options;\n'
@@ -227,22 +234,38 @@ def build_plugin(headerfile, ch, comments, inst, remaps):
     bound = []
     for f in ch.functions:
         # for each function:
-        #   - find the entry in the instantiation list
-        #   - note any array parameters to the function
-        #   - for each type, instantiate
+        #   1 determine if the function is templated
+        #   2 if templated:
+        #       - find the entry in the instantiation list
+        #   3 note any array parameters to the function
+        #   4 if templated:
+        #       - for each type, instantiate and bind
+        #   5 if not templated:
+        #       - bind
+
+        # 1
+        templated = bool(f['template'])
+
+        # 2
         found = False
-        for func in inst:
-            if f['name'] in func['functions']:
-                found = True
-                types = func['types']
+        if templated:
+            for func in inst:
+                if f['name'] in func['functions']:
+                    found = True
+                    types = func['types']
 
-        if not found:
-            # print('Could not find {}'.format(f['name']))
-            unbound.append(f['name'])
-            continue
+            if not found:
+                print('Could not find an instantiation for {}'.format(f['name']))
+                unbound.append(f['name'])
+                continue
+            else:
+                bound.append(f['name'])
         else:
-            bound.append(f['name'])
+            unbound.append(f['name'])
+            types = [None]
+            continue
 
+        # 3
         # find all parameter names and mark if array
         argnames = []
         for p in f['parameters']:
@@ -275,7 +298,8 @@ def build_plugin(headerfile, ch, comments, inst, remaps):
                 # not a templated function
                 typestr = ''
 
-            plugin += indent + 'm.def("{}", &_{}{},\n'.format(instname, f['name'], typestr)
+            plugin += indent + \
+                'm.def("{}", &_{}{}'.format(instname, f['name'], typestr)
 
             # name the arguments
             pyargnames = []
@@ -285,19 +309,21 @@ def build_plugin(headerfile, ch, comments, inst, remaps):
                     convert = '.noconvert()'
                 pyargnames.append('py::arg("{}"){}'.format(p, convert))
 
-            argstring = indent + ', '.join(pyargnames)
-            plugin += indent + argstring
+            argstring = indent + indent + ', '.join(pyargnames)
+            if len(pyargnames) > 0:
+                argstring = ',\n' + argstring
+            plugin += argstring
 
             # add the docstring to the last
             if i == ntypes - 1:
-                plugin += ',\nR"pbdoc(\n{})pbdoc");\n'.format(comments[f['name']])
+                plugin += ',\nR"pbdoc(\n{})pbdoc");\n'.format(
+                    comments[f['name']])
             else:
                 plugin += ');\n'
         plugin += '\n'
 
     plugin += '}\n'
-    # plugin += '#undef NC\n'
-    # plugin += '#undef YC\n'
+
     return plugin, bound, unbound
 
 
@@ -305,39 +331,66 @@ def main():
     import argparse
     import CppHeaderParser
 
-    parser = argparse.ArgumentParser(description='Wrap a C++ header with Pybind11')
+    parser = argparse.ArgumentParser(
+        description='Wrap a C++ header with Pybind11')
 
-    parser.add_argument("-o", "--output-file", metavar="FILE",
-                        help="(default output name for header.h is header_bind.cpp)")
+    parser.add_argument(
+        "-o",
+        "--output-file",
+        metavar="FILE",
+        help="(default output name for header.h is header_bind.cpp)")
 
     parser.add_argument("input_file", metavar="FILE")
 
     args = parser.parse_args()
 
+    #
+    # Parse the header file
+    #
     print('[Generating binding for {}]'.format(args.input_file))
     ch = CppHeaderParser.CppHeader(args.input_file)
     comments = find_comments(args.input_file, ch)
 
+    #
+    # load the instantiate file
+    #
     if args.input_file == 'bind_examples.h':
         data = yaml.load(open('instantiate-test.yml', 'r'))
     else:
-        data = yaml.load(open('instantiate.yml', 'r'))
-
+        try:
+            data = yaml.load(open('instantiate.yml', 'r'))
+        except:
+            data = {'instantiate': None}
     inst = data['instantiate']
+
+    #
+    # remap functions
+    #
     if 'remaps' in data:
         remaps = data['remaps']
     else:
         remaps = []
-    plugin, bound, unbound = build_plugin(args.input_file, ch, comments, inst, remaps)
 
-    chfuncs = {f['name']: f for f in ch.functions}
+    #
+    # build the plugin
+    #
+    plugin, bound, unbound = build_plugin(
+        args.input_file, ch, comments, inst, remaps)
+
+    #
+    # build each function
+    #
     print('\t[unbound functions: {}]'.format(' '.join(unbound)))
     flist = []
-    for fname in bound:
-        print('\t[building {}]'.format(fname))
-        fdef = build_function(chfuncs[fname])
-        flist.append(fdef)
+    for f in ch.functions:
+        if f['name'] in bound:
+            print('\t[building {}]'.format(f['name']))
+            fdef = build_function(f)
+            flist.append(fdef)
 
+    #
+    # write to _bind.cpp
+    #
     if args.output_file is not None:
         outf = args.output_file
     else:

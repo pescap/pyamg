@@ -27,8 +27,8 @@ from setuptools import setup, find_packages, Extension
 from setuptools.command.build_ext import build_ext
 from setuptools.command.test import test as TestCommand
 
-version = '3.3.2'
-isreleased = False
+version = '4.0.0'
+isreleased = True
 
 install_requires = (
     'numpy>=1.7.0',
@@ -174,8 +174,8 @@ class BuildExt(build_ext):
         'unix': [],
     }
 
-    #if sys.platform == 'darwin':
-    #    c_opts['unix'] += ['-stdlib=libc++', '-mmacosx-version-min=10.7']
+    if sys.platform == 'darwin':
+        c_opts['unix'] += ['-stdlib=libc++', '-mmacosx-version-min=10.7']
 
     def build_extensions(self):
         try:
@@ -281,9 +281,9 @@ setup(
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
         'Topic :: Education',
         'Topic :: Scientific/Engineering',
         'Topic :: Scientific/Engineering :: Mathematics',

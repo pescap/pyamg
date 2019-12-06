@@ -1,6 +1,4 @@
-"""
-Relaxation methods
-------------------
+"""Relaxation methods.
 
 The multigrid cycle is formed by two complementary procedures: relaxation and
 coarse-grid correction.  The role of relaxation is to rapidly damp oscillatory
@@ -28,9 +26,4 @@ PyAMG implements relaxation methods of the following varieties:
 Refer to the docstrings of the individual methods for additional information.
 
 """
-
-# TODO: explain separation of basic methods from interface methods.
-# TODO: explain why each class of methods exist
-# (parallel vs. serial, SPD vs. indefinite)
-
 postpone_import = 1

@@ -1,4 +1,4 @@
-"""Classical AMG (Ruge-Stuben AMG)"""
+"""Classical AMG (Ruge-Stuben AMG)."""
 from __future__ import absolute_import
 
 
@@ -25,32 +25,31 @@ def ruge_stuben_solver(A,
                        presmoother=('gauss_seidel', {'sweep': 'symmetric'}),
                        postsmoother=('gauss_seidel', {'sweep': 'symmetric'}),
                        max_levels=10, max_coarse=10, keep=False, **kwargs):
-    """Create a multilevel solver using Classical AMG (Ruge-Stuben AMG)
+    """Create a multilevel solver using Classical AMG (Ruge-Stuben AMG).
 
     Parameters
     ----------
     A : csr_matrix
         Square matrix in CSR format
-    strength : ['symmetric', 'classical', 'evolution', 'distance',
-                'algebraic_distance','affinity', 'energy_based', None]
+    strength : ['symmetric', 'classical', 'evolution', 'distance', 'algebraic_distance','affinity', 'energy_based', None]
         Method used to determine the strength of connection between unknowns
         of the linear system.  Method-specific parameters may be passed in
         using a tuple, e.g. strength=('symmetric',{'theta' : 0.25 }). If
         strength=None, all nonzero entries of the matrix are considered strong.
-    CF : {string} : default 'RS'
+    CF : string
         Method used for coarse grid selection (C/F splitting)
         Supported methods are RS, PMIS, PMISc, CLJP, CLJPc, and CR.
-    presmoother : {string or dict}
+    presmoother : string or dict
         Method used for presmoothing at each level.  Method-specific parameters
         may be passed in using a tuple, e.g.
         presmoother=('gauss_seidel',{'sweep':'symmetric}), the default.
-    postsmoother : {string or dict}
+    postsmoother : string or dict
         Postsmoothing method with the same usage as presmoother
-    max_levels: {integer} : default 10
+    max_levels: integer
         Maximum number of levels to be used in the multilevel solver.
-    max_coarse: {integer} : default 500
+    max_coarse: integer
         Maximum number of variables permitted on the coarse grid.
-    keep: {bool} : default False
+    keep: bool
         Flag to indicate keeping extra operators in the hierarchy for
         diagnostics.  For example, if True, then strength of connection (C) and
         tentative prolongation (T) are kept.
@@ -69,7 +68,6 @@ def ruge_stuben_solver(A,
 
     Notes
     -----
-
     "coarse_solver" is an optional argument and is the solver used at the
     coarsest grid.  The default is a pseudo-inverse.  Most simply,
     coarse_solver can be one of ['splu', 'lu', 'cholesky, 'pinv',
@@ -90,7 +88,6 @@ def ruge_stuben_solver(A,
     aggregation.rootnode_solver
 
     """
-
     levels = [multilevel_solver.level()]
 
     # convert A to csr
@@ -99,7 +96,7 @@ def ruge_stuben_solver(A,
             A = csr_matrix(A)
             warn("Implicit conversion of A to CSR",
                  SparseEfficiencyWarning)
-        except:
+        except BaseException:
             raise TypeError('Argument A must have type csr_matrix, \
                              or be convertible to csr_matrix')
     # preprocess A
@@ -119,8 +116,7 @@ def ruge_stuben_solver(A,
 
 # internal function
 def extend_hierarchy(levels, strength, CF, keep):
-    """ helper function for local methods """
-
+    """Extend the multigrid hierarchy."""
     def unpack_arg(v):
         if isinstance(v, tuple):
             return v[0], v[1]

@@ -1,4 +1,4 @@
-"""Relaxation methods for linear systems"""
+"""Relaxation methods for linear systems."""
 
 
 from warnings import warn
@@ -11,23 +11,23 @@ from pyamg.util.utils import type_prep, get_diagonal, get_block_diag
 from pyamg import amg_core
 from scipy.linalg import lapack as la
 
-__all__ = ['sor', 'gauss_seidel', 'jacobi', 'polynomial']
-__all__ += ['schwarz', 'schwarz_parameters']
-__all__ += ['jacobi_ne', 'gauss_seidel_ne', 'gauss_seidel_nr']
-__all__ += ['gauss_seidel_indexed', 'block_jacobi', 'block_gauss_seidel']
+__all__ = ['sor', 'gauss_seidel', 'jacobi', 'polynomial',
+           'schwarz', 'schwarz_parameters',
+           'jacobi_ne', 'gauss_seidel_ne', 'gauss_seidel_nr',
+           'gauss_seidel_indexed', 'block_jacobi', 'block_gauss_seidel']
 
 
+#def make_system(A, x, b, formats=None): # From master branch
 def make_system(A, x, b, formats=None, multivector=False):
-    """
-    Return A,x,b suitable for relaxation or raise an exception
+    """Return A,x,b suitable for relaxation or raise an exception.
 
     Parameters
     ----------
-    A : {sparse-matrix}
+    A : sparse-matrix
         n x n system
-    x : {array}
+    x : array
         n-vector, initial guess
-    b : {array}
+    b : array
         n-vector, right-hand side
     formats: {'csr', 'csc', 'bsr', 'lil', 'dok',...}
         desired sparse matrix format
@@ -61,8 +61,8 @@ def make_system(A, x, b, formats=None, multivector=False):
     (100,)
     >>> print A.format
     csc
-    """
 
+    """
     if formats is None:
         pass
     elif formats == ['csr']:
@@ -112,11 +112,11 @@ def make_system(A, x, b, formats=None, multivector=False):
 
 
 def sor(A, x, b, omega, iterations=1, sweep='forward'):
-    """Perform SOR iteration on the linear system Ax=b
+    """Perform SOR iteration on the linear system Ax=b.
 
     Parameters
     ----------
-    A : {csr_matrix, bsr_matrix}
+    A : csr_matrix, bsr_matrix
         Sparse NxN matrix
     x : ndarray
         Approximate solution (length N)
@@ -160,6 +160,7 @@ def sor(A, x, b, omega, iterations=1, sweep='forward'):
     >>> x0 = np.zeros((A.shape[0],1))
     >>> residuals=[]
     >>> x = sa.solve(b, x0=x0, tol=1e-8, residuals=residuals)
+
     """
     A, x, b = make_system(A, x, b, formats=['csr', 'bsr'])
 
@@ -177,12 +178,11 @@ def sor(A, x, b, omega, iterations=1, sweep='forward'):
 
 def schwarz(A, x, b, iterations=1, subdomain=None, subdomain_ptr=None,
             inv_subblock=None, inv_subblock_ptr=None, sweep='forward'):
-    """Perform Overlapping multiplicative Schwarz on
-       the linear system Ax=b
+    """Perform Overlapping multiplicative Schwarz on the linear system Ax=b.
 
     Parameters
     ----------
-    A : {csr_matrix, bsr_matrix}
+    A : csr_matrix, bsr_matrix
         Sparse NxN matrix
     x : ndarray
         Approximate solution (length N)
@@ -190,16 +190,16 @@ def schwarz(A, x, b, iterations=1, subdomain=None, subdomain_ptr=None,
         Right-hand side (length N)
     iterations : int
         Number of iterations to perform
-    subdomain : {int array}
+    subdomain : int array
         Linear array containing each subdomain's elements
-    subdomain_ptr : {int array}
+    subdomain_ptr : int array
         Pointer in subdomain, such that
         subdomain[subdomain_ptr[i]:subdomain_ptr[i+1]]]
         contains the _sorted_ indices in subdomain i
-    inv_subblock : {int_array}
+    inv_subblock : int_array
         Linear array containing each subdomain's
         inverted diagonal block of A
-    inv_subblock_ptr : {int array}
+    inv_subblock_ptr : int array
         Pointer in inv_subblock, such that
         inv_subblock[inv_subblock_ptr[i]:inv_subblock_ptr[i+1]]]
         contains the inverted diagonal block of A for the
@@ -245,8 +245,8 @@ def schwarz(A, x, b, iterations=1, subdomain=None, subdomain_ptr=None,
     >>> x0=np.zeros((A.shape[0],1))
     >>> residuals=[]
     >>> x = sa.solve(b, x0=x0, tol=1e-8, residuals=residuals)
-    """
 
+    """
     A, x, b = make_system(A, x, b, formats=['csr'])
     A.sort_indices()
 
@@ -286,11 +286,11 @@ def schwarz(A, x, b, iterations=1, subdomain=None, subdomain_ptr=None,
 
 
 def gauss_seidel(A, x, b, iterations=1, sweep='forward'):
-    """Perform Gauss-Seidel iteration on the linear system Ax=b
+    """Perform Gauss-Seidel iteration on the linear system Ax=b.
 
     Parameters
     ----------
-    A : {csr_matrix, bsr_matrix}
+    A : csr_matrix, bsr_matrix
         Sparse NxN matrix
     x : ndarray
         Approximate solution (length N)
@@ -328,6 +328,7 @@ def gauss_seidel(A, x, b, iterations=1, sweep='forward'):
     >>> x0=np.zeros((A.shape[0],1))
     >>> residuals=[]
     >>> x = sa.solve(b, x0=x0, tol=1e-8, residuals=residuals)
+
     """
     A, x, b = make_system(A, x, b, formats=['csr', 'bsr'])
 
@@ -363,7 +364,7 @@ def gauss_seidel(A, x, b, iterations=1, sweep='forward'):
 
 
 def jacobi(A, x, b, iterations=1, omega=1.0):
-    """Perform Jacobi iteration on the linear system Ax=b
+    """Perform Jacobi iteration on the linear system Ax=b.
 
     Parameters
     ----------
@@ -405,6 +406,7 @@ def jacobi(A, x, b, iterations=1, omega=1.0):
     >>> x0=np.zeros((A.shape[0],1))
     >>> residuals=[]
     >>> x = sa.solve(b, x0=x0, tol=1e-8, residuals=residuals)
+
     """
     A, x, b = make_system(A, x, b, formats=['csr', 'bsr'], multivector=True)
 
@@ -436,7 +438,7 @@ def jacobi(A, x, b, iterations=1, omega=1.0):
 
 
 def block_jacobi(A, x, b, Dinv=None, blocksize=1, iterations=1, omega=1.0):
-    """Perform block Jacobi iteration on the linear system Ax=b
+    """Perform block Jacobi iteration on the linear system Ax=b.
 
     Parameters
     ----------
@@ -484,8 +486,8 @@ def block_jacobi(A, x, b, Dinv=None, blocksize=1, iterations=1, omega=1.0):
     >>> x0=np.zeros((A.shape[0],1))
     >>> residuals=[]
     >>> x = sa.solve(b, x0=x0, tol=1e-8, residuals=residuals)
-    """
 
+    """
     A, x, b = make_system(A, x, b, formats=['csr', 'bsr'])
     A = A.tobsr(blocksize=(blocksize, blocksize))
 
@@ -516,11 +518,11 @@ def block_jacobi(A, x, b, Dinv=None, blocksize=1, iterations=1, omega=1.0):
 
 def block_gauss_seidel(A, x, b, iterations=1, sweep='forward', blocksize=1,
                        Dinv=None):
-    """Perform block Gauss-Seidel iteration on the linear system Ax=b
+    """Perform block Gauss-Seidel iteration on the linear system Ax=b.
 
     Parameters
     ----------
-    A : {csr_matrix, bsr_matrix}
+    A : csr_matrix, bsr_matrix
         Sparse NxN matrix
     x : ndarray
         Approximate solution (length N)
@@ -566,6 +568,7 @@ def block_gauss_seidel(A, x, b, iterations=1, sweep='forward', blocksize=1,
     >>> x0=np.zeros((A.shape[0],1))
     >>> residuals=[]
     >>> x = sa.solve(b, x0=x0, tol=1e-8, residuals=residuals)
+
     """
     A, x, b = make_system(A, x, b, formats=['csr', 'bsr'])
     A = A.tobsr(blocksize=(blocksize, blocksize))
@@ -599,8 +602,7 @@ def block_gauss_seidel(A, x, b, iterations=1, sweep='forward', blocksize=1,
 
 
 def polynomial(A, x, b, coefficients, iterations=1):
-    """Apply a polynomial smoother to the system Ax=b
-
+    """Apply a polynomial smoother to the system Ax=b.
 
     Parameters
     ----------
@@ -610,7 +612,7 @@ def polynomial(A, x, b, coefficients, iterations=1):
         Approximate solution (length N)
     b : ndarray
         Right-hand side (length N)
-    coefficients : {array_like}
+    coefficients : array_like
         Coefficients of the polynomial.  See Notes section for details.
     iterations : int
         Number of iterations to perform
@@ -657,6 +659,7 @@ def polynomial(A, x, b, coefficients, iterations=1):
     >>> x0=np.zeros((A.shape[0],1))
     >>> residuals=[]
     >>> x = sa.solve(b, x0=x0, tol=1e-8, residuals=residuals)
+
     """
     A, x, b = make_system(A, x, b, formats=None)
 
@@ -677,7 +680,7 @@ def polynomial(A, x, b, coefficients, iterations=1):
 
 
 def gauss_seidel_indexed(A, x, b, indices, iterations=1, sweep='forward'):
-    """Perform indexed Gauss-Seidel iteration on the linear system Ax=b
+    """Perform indexed Gauss-Seidel iteration on the linear system Ax=b.
 
     In indexed Gauss-Seidel, the sequence in which unknowns are relaxed is
     specified explicitly.  In contrast, the standard Gauss-Seidel method
@@ -750,8 +753,9 @@ def gauss_seidel_indexed(A, x, b, indices, iterations=1, sweep='forward'):
 
 
 def jacobi_ne(A, x, b, iterations=1, omega=1.0):
-    """Perform Jacobi iterations on the linear system A A.H x = A.H b
-       (Also known as Cimmino relaxation)
+    """Perform Jacobi iterations on the linear system A A.H x = A.H b.
+
+    Also known as Cimmino relaxation
 
     Parameters
     ----------
@@ -807,6 +811,7 @@ def jacobi_ne(A, x, b, iterations=1, omega=1.0):
     >>> x0=np.zeros((A.shape[0],1))
     >>> residuals=[]
     >>> x = sa.solve(b, x0=x0, tol=1e-8, residuals=residuals)
+
     """
     A, x, b = make_system(A, x, b, formats=['csr'])
 
@@ -830,25 +835,26 @@ def jacobi_ne(A, x, b, iterations=1, omega=1.0):
 
 def gauss_seidel_ne(A, x, b, iterations=1, sweep='forward', omega=1.0,
                     Dinv=None):
-    """Perform Gauss-Seidel iterations on the linear system A A.H x = b
-       (Also known as Kaczmarz relaxation)
+    """Perform Gauss-Seidel iterations on the linear system A A.H x = b.
+
+    Also known as Kaczmarz relaxation
 
     Parameters
     ----------
     A : csr_matrix
         Sparse NxN matrix
-    x : { ndarray }
+    x : ndarray
         Approximate solution (length N)
-    b : { ndarray }
+    b : ndarray
         Right-hand side (length N)
-    iterations : { int }
+    iterations : int
         Number of iterations to perform
     sweep : {'forward','backward','symmetric'}
         Direction of sweep
-    omega : { float}
+    omega : float
         Relaxation parameter typically in (0, 2)
         if omega != 1.0, then algorithm becomes SOR on A A.H
-    Dinv : { ndarray}
+    Dinv : ndarray
         Inverse of diag(A A.H),  (length N)
 
     Returns
@@ -888,8 +894,8 @@ def gauss_seidel_ne(A, x, b, iterations=1, sweep='forward', omega=1.0,
     >>> x0=np.zeros((A.shape[0],1))
     >>> residuals=[]
     >>> x = sa.solve(b, x0=x0, tol=1e-8, residuals=residuals)
-    """
 
+    """
     A, x, b = make_system(A, x, b, formats=['csr'])
 
     # Dinv for A*A.H
@@ -919,24 +925,24 @@ def gauss_seidel_ne(A, x, b, iterations=1, sweep='forward', omega=1.0,
 
 def gauss_seidel_nr(A, x, b, iterations=1, sweep='forward', omega=1.0,
                     Dinv=None):
-    """Perform Gauss-Seidel iterations on the linear system A.H A x = A.H b
+    """Perform Gauss-Seidel iterations on the linear system A.H A x = A.H b.
 
     Parameters
     ----------
     A : csr_matrix
         Sparse NxN matrix
-    x : { ndarray }
+    x : ndarray
         Approximate solution (length N)
-    b : { ndarray }
+    b : ndarray
         Right-hand side (length N)
-    iterations : { int }
+    iterations : int
         Number of iterations to perform
     sweep : {'forward','backward','symmetric'}
         Direction of sweep
-    omega : { float}
+    omega : float
         Relaxation parameter typically in (0, 2)
         if omega != 1.0, then algorithm becomes SOR on A.H A
-    Dinv : { ndarray}
+    Dinv : ndarray
         Inverse of diag(A.H A),  (length N)
 
     Returns
@@ -973,8 +979,8 @@ def gauss_seidel_nr(A, x, b, iterations=1, sweep='forward', omega=1.0,
     >>> x0=np.zeros((A.shape[0],1))
     >>> residuals=[]
     >>> x = sa.solve(b, x0=x0, tol=1e-8, residuals=residuals)
-    """
 
+    """
     A, x, b = make_system(A, x, b, formats=['csc'])
 
     # Dinv for A.H*A
@@ -1018,7 +1024,8 @@ def gauss_seidel_nr(A, x, b, iterations=1, sweep='forward', omega=1.0,
 
 def schwarz_parameters(A, subdomain=None, subdomain_ptr=None,
                        inv_subblock=None, inv_subblock_ptr=None):
-    '''
+    """Set Schwarz parameters.
+
     Helper function for setting up Schwarz relaxation.  This function avoids
     recomputing the subdomains and block inverses manytimes, e.g., it avoids a
     costly double computation when setting up pre and post smoothing with
@@ -1034,8 +1041,8 @@ def schwarz_parameters(A, subdomain=None, subdomain_ptr=None,
     A.schwarz_parameters[1] is subdomain_ptr
     A.schwarz_parameters[2] is inv_subblock
     A.schwarz_parameters[3] is inv_subblock_ptr
-    '''
 
+    """
     # Check if A has a pre-existing set of Schwarz parameters
     if hasattr(A, 'schwarz_parameters'):
         if subdomain is not None and subdomain_ptr is not None:

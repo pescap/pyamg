@@ -12,8 +12,7 @@ from numpy.testing import TestCase, assert_array_almost_equal,\
     assert_equal, assert_almost_equal
 
 import warnings
-warnings.filterwarnings('ignore', category=UserWarning,
-                        message='Having less target vectors')
+warnings.filterwarnings('ignore', category=UserWarning, message='Having less')
 
 
 class TestEnergyMin(TestCase):
@@ -40,8 +39,8 @@ class TestEnergyMin(TestCase):
             SS = SS.tocoo()
             S.data[:] = 0.0
             SS = scipy.sparse.coo_matrix((np.hstack((S.data, SS.data)),
-                                         (np.hstack((S.row, SS.row)),
-                                          np.hstack((S.col, SS.col)))),
+                                          (np.hstack((S.row, SS.row)),
+                                           np.hstack((S.col, SS.col)))),
                                          shape=S.shape)
             # Convert back to BSR
             SS = SS.tobsr((A.blocksize[0], B.blocksize[1]))
@@ -53,11 +52,11 @@ class TestEnergyMin(TestCase):
         cases = []
 
         # 1x1 tests
-        A = csr_matrix(np.mat([[1.1]])).tobsr(blocksize=(1, 1))
-        B = csr_matrix(np.mat([[1.0]])).tobsr(blocksize=(1, 1))
-        A2 = csr_matrix(np.mat([[0.]])).tobsr(blocksize=(1, 1))
-        mask = csr_matrix(np.mat([[1.]])).tobsr(blocksize=(1, 1))
-        mask2 = csr_matrix(np.mat([[0.]])).tobsr(blocksize=(1, 1))
+        A = csr_matrix(np.array([[1.1]])).tobsr(blocksize=(1, 1))
+        B = csr_matrix(np.array([[1.0]])).tobsr(blocksize=(1, 1))
+        A2 = csr_matrix(np.array([[0.]])).tobsr(blocksize=(1, 1))
+        mask = csr_matrix(np.array([[1.]])).tobsr(blocksize=(1, 1))
+        mask2 = csr_matrix(np.array([[0.]])).tobsr(blocksize=(1, 1))
         cases.append((A, A, mask))                                  # 1x1,  1x1
         cases.append((A, A, mask2))                                 # 1x1,  1x1
         cases.append((A, B, mask))                                  # 1x1,  1x1
@@ -66,22 +65,22 @@ class TestEnergyMin(TestCase):
         cases.append((A2, A2, mask))                                # 1x1,  1x1
 
         # 1x2 and 2x1 tests
-        A = csr_matrix(np.mat([[1.1]])).tobsr(blocksize=(1, 1))
-        B = csr_matrix(np.mat([[1.0, 2.3]])).tobsr(blocksize=(1, 1))
-        A2 = csr_matrix(np.mat([[0.]])).tobsr(blocksize=(1, 1))
-        mask = csr_matrix(np.mat([[1., 1.]])).tobsr(blocksize=(1, 1))
-        mask2 = csr_matrix(np.mat([[0., 1.]])).tobsr(blocksize=(1, 1))
+        A = csr_matrix(np.array([[1.1]])).tobsr(blocksize=(1, 1))
+        B = csr_matrix(np.array([[1.0, 2.3]])).tobsr(blocksize=(1, 1))
+        A2 = csr_matrix(np.array([[0.]])).tobsr(blocksize=(1, 1))
+        mask = csr_matrix(np.array([[1., 1.]])).tobsr(blocksize=(1, 1))
+        mask2 = csr_matrix(np.array([[0., 1.]])).tobsr(blocksize=(1, 1))
         cases.append((A, B, mask))                                  # 1x1,  1x2
         cases.append((A2, B, mask))                                 # 1x1,  1x2
         cases.append((A, B, mask2))                                 # 1x1,  1x2
         cases.append((A2, B, mask2))                                # 1x1,  1x2
 
-        B2 = csr_matrix(np.mat([[0.0, 2.3]])).tobsr(blocksize=(1, 1))
-        B3 = csr_matrix(np.mat([[3.0, 0.0]])).tobsr(blocksize=(1, 1))
-        mask = csr_matrix(np.mat([[1., 1.],
-                                  [1., 1.]])).tobsr(blocksize=(1, 1))
-        mask3 = csr_matrix(np.mat([[0., 1.],
-                                   [1., 0.]])).tobsr(blocksize=(1, 1))
+        B2 = csr_matrix(np.array([[0.0, 2.3]])).tobsr(blocksize=(1, 1))
+        B3 = csr_matrix(np.array([[3.0, 0.0]])).tobsr(blocksize=(1, 1))
+        mask = csr_matrix(np.array([[1., 1.],
+                                    [1., 1.]])).tobsr(blocksize=(1, 1))
+        mask3 = csr_matrix(np.array([[0., 1.],
+                                     [1., 0.]])).tobsr(blocksize=(1, 1))
         cases.append((B.T.copy(), B2, mask))                      # 2x1,  1x2
         cases.append((B.T.copy(), B2, mask3))                     # 2x1,  1x2
         cases.append((B.T.copy(), B3, mask))                      # 2x1,  1x2
@@ -90,10 +89,10 @@ class TestEnergyMin(TestCase):
         B = B.tobsr(blocksize=(1, 2))
         B2 = B2.tobsr(blocksize=(1, 2))
         B3 = B3.tobsr(blocksize=(1, 2))
-        mask = csr_matrix(np.mat([[1., 1.],
-                                  [1., 1.]])).tobsr(blocksize=(2, 2))
-        mask2 = csr_matrix(np.mat([[0., 0.],
-                                   [0., 0.]])).tobsr(blocksize=(2, 2))
+        mask = csr_matrix(np.array([[1., 1.],
+                                    [1., 1.]])).tobsr(blocksize=(2, 2))
+        mask2 = csr_matrix(np.array([[0., 0.],
+                                     [0., 0.]])).tobsr(blocksize=(2, 2))
         cases.append((B.T.copy(), B2, mask))                      # 2x1,  1x2
         cases.append((B.T.copy(), B2, mask2))                     # 2x1,  1x2
         cases.append((B.T.copy(), B3, mask))                      # 2x1,  1x2
@@ -102,8 +101,8 @@ class TestEnergyMin(TestCase):
         B = B.tobsr(blocksize=(1, 1))
         B2 = B2.tobsr(blocksize=(1, 1))
         B3 = B3.tobsr(blocksize=(1, 1))
-        mask = csr_matrix(np.mat([[1.]])).tobsr(blocksize=(1, 1))
-        mask2 = csr_matrix(np.mat([[0.]])).tobsr(blocksize=(1, 1))
+        mask = csr_matrix(np.array([[1.]])).tobsr(blocksize=(1, 1))
+        mask2 = csr_matrix(np.array([[0.]])).tobsr(blocksize=(1, 1))
         cases.append((B, B2.T.copy(), mask))                      # 1x2,  2x1
         cases.append((B, B2.T.copy(), mask2))                     # 1x2,  2x1
         cases.append((B, B3.T.copy(), mask))                      # 1x2,  2x1
@@ -118,15 +117,15 @@ class TestEnergyMin(TestCase):
         cases.append((B, B3.T.copy(), mask2))                     # 1x2,  2x1
 
         # 2x2 tests
-        A = csr_matrix(np.mat([[1., 2.], [2., 4.]])).tobsr(blocksize=(2, 2))
-        B = csr_matrix(np.mat([[1.3, 2.], [2.8, 4.]])).tobsr(blocksize=(2, 2))
-        A2 = csr_matrix(np.mat([[1.3, 0.], [0., 4.]])).tobsr(blocksize=(2, 2))
-        B2 = csr_matrix(np.mat([[1.3, 0.], [2., 4.]])).tobsr(blocksize=(2, 1))
+        A = csr_matrix(np.array([[1., 2.], [2., 4.]])).tobsr(blocksize=(2, 2))
+        B = csr_matrix(np.array([[1.3, 2.], [2.8, 4.]])).tobsr(blocksize=(2, 2))
+        A2 = csr_matrix(np.array([[1.3, 0.], [0., 4.]])).tobsr(blocksize=(2, 2))
+        B2 = csr_matrix(np.array([[1.3, 0.], [2., 4.]])).tobsr(blocksize=(2, 1))
         mask = csr_matrix((np.array([1., 1., 1., 1.]),
-                          (np.array([0, 0, 1, 1]), np.array([0, 1, 0, 1]))),
+                           (np.array([0, 0, 1, 1]), np.array([0, 1, 0, 1]))),
                           shape=(2, 2)).tobsr(blocksize=(2, 2))
         mask2 = csr_matrix((np.array([1., 0., 1., 0.]),
-                           (np.array([0, 0, 1, 1]), np.array([0, 1, 0, 1]))),
+                            (np.array([0, 0, 1, 1]), np.array([0, 1, 0, 1]))),
                            shape=(2, 2)).tobsr(blocksize=(2, 1))
         mask2.eliminate_zeros()
         cases.append((A, A, mask))                                  # 2x2,  2x2
@@ -142,17 +141,17 @@ class TestEnergyMin(TestCase):
         mask = A.copy()
         mask2 = A2.copy()
         mask3 = csr_matrix((np.ones(2, dtype=float),
-                           (np.array([0, 1]), np.array([0, 0]))),
+                            (np.array([0, 1]), np.array([0, 0]))),
                            shape=(2, 2)).tobsr(blocksize=(1, 1))
         cases.append((A, B, mask))                                  # 2x2,  2x2
         cases.append((A2, B2, mask2))                               # 2x2,  2x2
         cases.append((A, B, mask3))                                 # 2x2,  2x2
         cases.append((A2, B2, mask3))                               # 2x2,  2x2
 
-        B = csr_matrix(np.mat([[1.0], [2.3]])).tobsr(blocksize=(1, 1))
-        B2 = csr_matrix(np.mat([[1.1], [0.0]])).tobsr(blocksize=(1, 1))
-        mask = csr_matrix(np.mat([[1.], [1.1]])).tobsr(blocksize=(1, 1))
-        mask2 = csr_matrix(np.mat([[0.], [1.1]])).tobsr(blocksize=(1, 1))
+        B = csr_matrix(np.array([[1.0], [2.3]])).tobsr(blocksize=(1, 1))
+        B2 = csr_matrix(np.array([[1.1], [0.0]])).tobsr(blocksize=(1, 1))
+        mask = csr_matrix(np.array([[1.], [1.1]])).tobsr(blocksize=(1, 1))
+        mask2 = csr_matrix(np.array([[0.], [1.1]])).tobsr(blocksize=(1, 1))
         cases.append((A, B, mask))                                 # 2x2,  2x1
         cases.append((A, B2, mask2))                                # 2x2,  2x1
         cases.append((A2, B, mask))                                 # 2x2,  2x1
@@ -167,14 +166,14 @@ class TestEnergyMin(TestCase):
         cases.append((A, B, mask))                                 # 2x2,  2x1
         cases.append((A2, B2, mask2))                              # 2x2,  2x1
 
-        B = csr_matrix(np.mat([[1.3, 2., 1.0], [2.8, 4., 0.]]))
+        B = csr_matrix(np.array([[1.3, 2., 1.0], [2.8, 4., 0.]]))
         B = B.tobsr(blocksize=(1, 1))
-        B2 = csr_matrix(np.mat([[1.3, 2., 1.0], [2.8, 4., 0.]]))
+        B2 = csr_matrix(np.array([[1.3, 2., 1.0], [2.8, 4., 0.]]))
         B2 = B2.tobsr(blocksize=(2, 3))
-        mask = csr_matrix(np.mat([[1., 2., 1.], [1., 2., 0.]]))
+        mask = csr_matrix(np.array([[1., 2., 1.], [1., 2., 0.]]))
         mask = mask.tobsr(blocksize=(1, 1))
         mask2 = mask.tobsr((2, 3))
-        mask3 = csr_matrix(np.mat([[0., 0., 0.], [0., 0., 0.]]))
+        mask3 = csr_matrix(np.array([[0., 0., 0.], [0., 0., 0.]]))
         mask3 = mask3.tobsr(blocksize=(2, 3))
         cases.append((A, B, mask))                                 # 2x2,  2x3
         cases.append((A2, B2, mask2))                              # 2x2,  2x3
@@ -184,10 +183,10 @@ class TestEnergyMin(TestCase):
         cases.append((A2, B2, mask3))                              # 2x2,  2x3
 
         # 4x4 tests
-        A = np.mat([[0., 16.9, 6.4, 0.0],
-                    [16.9, 13.8, 7.2, 0.],
-                    [6.4, 7.2, 12., 6.1],
-                    [0.0, 0., 6.1, 0.]])
+        A = np.array([[0., 16.9, 6.4, 0.0],
+                      [16.9, 13.8, 7.2, 0.],
+                      [6.4, 7.2, 12., 6.1],
+                      [0.0, 0., 6.1, 0.]])
         B = A.copy()
         B = A[:, 0:2]
         B[1, 0] = 3.1
@@ -221,7 +220,7 @@ class TestEnergyMin(TestCase):
         A = poisson((5, 5), format='csr')
         A = A.tobsr(blocksize=(5, 5))
         Ai = 1.0j * A
-        B = A.todense()
+        B = A.toarray()
         B = csr_matrix(B[:, 0:8])
         B = B.tobsr(blocksize=(5, 8))
         Bi = 1.0j * B
@@ -292,163 +291,143 @@ class TestEnergyMin(TestCase):
         cases = []
 
         # Simple, real-valued diffusion problems
+        name = 'airfoil'
         X = load_example('airfoil')
         A = X['A'].tocsr()
         B = X['B']
         cases.append((A, B, ('jacobi',
-                             {'filter': True, 'weighting': 'local'})))
+                             {'filter': True, 'weighting': 'local'}), name))
         cases.append((A, B, ('jacobi',
-                             {'filter': True, 'weighting': 'block'})))
+                             {'filter': True, 'weighting': 'block'}), name))
 
-        cases.append((A, B, ('energy', {'maxiter': 3})))
-        cases.append((A, B, ('energy', {'krylov': 'cgnr'})))
-        cases.append((A, B, ('energy', {'krylov': 'gmres', 'degree': 2})))
+        cases.append((A, B, ('energy', {'maxiter': 3}), name))
+        cases.append((A, B, ('energy', {'krylov': 'cgnr'}), name))
+        cases.append((A, B, ('energy', {'krylov': 'gmres', 'degree': 2}), name))
 
+        name = 'poisson'
         A = poisson((10, 10), format='csr')
         B = np.ones((A.shape[0], 1))
         cases.append((A, B, ('jacobi',
-                             {'filter': True, 'weighting': 'diagonal'})))
+                             {'filter': True, 'weighting': 'diagonal'}), name))
         cases.append((A, B, ('jacobi',
-                             {'filter': True, 'weighting': 'local'})))
+                             {'filter': True, 'weighting': 'local'}), name))
 
-        cases.append((A, B, 'energy'))
-        cases.append((A, B, ('energy', {'degree': 2})))
-        cases.append((A, B, ('energy', {'krylov': 'cgnr', 'degree': 2})))
-        cases.append((A, B, ('energy', {'krylov': 'gmres'})))
+        cases.append((A, B, 'energy', name))
+        cases.append((A, B, ('energy', {'degree': 2}), name))
+        cases.append((A, B, ('energy', {'krylov': 'cgnr', 'degree': 2}), name))
+        cases.append((A, B, ('energy', {'krylov': 'gmres'}), name))
 
         # Simple, imaginary-valued problems
+        name = 'random imaginary'
         iA = 1.0j * A
         iB = 1.0 + np.random.rand(iA.shape[0], 2)\
                  + 1.0j * (1.0 + np.random.rand(iA.shape[0], 2))
 
         cases.append((iA, B, ('jacobi',
-                              {'filter': True, 'weighting': 'diagonal'})))
+                              {'filter': True, 'weighting': 'diagonal'}), name))
         cases.append((iA, B, ('jacobi',
-                              {'filter': True, 'weighting': 'block'})))
+                              {'filter': True, 'weighting': 'block'}), name))
         cases.append((iA, iB, ('jacobi',
-                               {'filter': True, 'weighting': 'local'})))
+                               {'filter': True, 'weighting': 'local'}), name))
         cases.append((iA, iB, ('jacobi',
-                               {'filter': True, 'weighting': 'block'})))
+                               {'filter': True, 'weighting': 'block'}), name))
 
         cases.append((iA.tobsr(blocksize=(5, 5)), B,
-                     ('jacobi', {'filter': True, 'weighting': 'block'})))
+                      ('jacobi', {'filter': True, 'weighting': 'block'}), name))
         cases.append((iA.tobsr(blocksize=(5, 5)), iB,
-                     ('jacobi', {'filter': True, 'weighting': 'block'})))
+                      ('jacobi', {'filter': True, 'weighting': 'block'}), name))
 
-        cases.append((iA, B, ('energy', {'krylov': 'cgnr', 'degree': 2})))
-        cases.append((iA, iB, ('energy', {'krylov': 'cgnr'})))
+        cases.append((iA, B, ('energy', {'krylov': 'cgnr', 'degree': 2}), name))
+        cases.append((iA, iB, ('energy', {'krylov': 'cgnr'}), name))
         cases.append((iA.tobsr(blocksize=(5, 5)), B,
-                     ('energy',
-                      {'krylov': 'cgnr', 'degree': 2, 'maxiter': 3,
-                       'postfilter': {'theta': 0.05}})))
+                      ('energy',
+                       {'krylov': 'cgnr', 'degree': 2, 'maxiter': 3,
+                        'postfilter': {'theta': 0.05}}), name))
         cases.append((iA.tobsr(blocksize=(5, 5)), B,
-                     ('energy',
-                      {'krylov': 'cgnr', 'degree': 2, 'maxiter': 3,
-                       'prefilter': {'theta': 0.05}})))
+                      ('energy',
+                       {'krylov': 'cgnr', 'degree': 2, 'maxiter': 3,
+                        'prefilter': {'theta': 0.05}}), name))
         cases.append((iA.tobsr(blocksize=(5, 5)), B,
-                     ('energy',
-                      {'krylov': 'cgnr', 'degree': 2, 'maxiter': 3})))
+                      ('energy',
+                       {'krylov': 'cgnr', 'degree': 2, 'maxiter': 3}), name))
         cases.append((iA.tobsr(blocksize=(5, 5)), iB,
-                     ('energy', {'krylov': 'cgnr'})))
+                      ('energy', {'krylov': 'cgnr'}), name))
 
-        cases.append((iA, B, ('energy', {'krylov': 'gmres'})))
-        cases.append((iA, iB, ('energy', {'krylov': 'gmres', 'degree': 2})))
+        cases.append((iA, B, ('energy', {'krylov': 'gmres'}), name))
+        cases.append((iA, iB, ('energy', {'krylov': 'gmres', 'degree': 2}), name))
         cases.append((iA.tobsr(blocksize=(5, 5)), B,
-                     ('energy',
-                      {'krylov': 'gmres', 'degree': 2, 'maxiter': 3})))
+                      ('energy',
+                       {'krylov': 'gmres', 'degree': 2, 'maxiter': 3}), name))
         cases.append((iA.tobsr(blocksize=(5, 5)), iB,
-                     ('energy', {'krylov': 'gmres'})))
+                      ('energy', {'krylov': 'gmres'}), name))
 
         # Simple, imaginary-valued problems
+        name = 'random imaginary + I'
         iA = A + 1.0j * scipy.sparse.eye(A.shape[0], A.shape[1])
 
         cases.append((iA, B, ('jacobi',
-                              {'filter': True, 'weighting': 'local'})))
+                              {'filter': True, 'weighting': 'local'}), name))
         cases.append((iA, B, ('jacobi',
-                              {'filter': True, 'weighting': 'block'})))
+                              {'filter': True, 'weighting': 'block'}), name))
         cases.append((iA, iB, ('jacobi',
-                               {'filter': True, 'weighting': 'diagonal'})))
+                               {'filter': True, 'weighting': 'diagonal'}), name))
         cases.append((iA, iB, ('jacobi',
-                               {'filter': True, 'weighting': 'block'})))
+                               {'filter': True, 'weighting': 'block'}), name))
         cases.append((iA.tobsr(blocksize=(4, 4)), iB,
-                     ('jacobi', {'filter': True, 'weighting': 'block'})))
+                      ('jacobi', {'filter': True, 'weighting': 'block'}), name))
 
-        cases.append((iA, B, ('energy', {'krylov': 'cgnr'})))
+        cases.append((iA, B, ('energy', {'krylov': 'cgnr'}), name))
         cases.append((iA.tobsr(blocksize=(4, 4)), iB,
-                     ('energy', {'krylov': 'cgnr'})))
+                      ('energy', {'krylov': 'cgnr'}), name))
 
-        cases.append((iA, B, ('energy', {'krylov': 'gmres'})))
+        cases.append((iA, B, ('energy', {'krylov': 'gmres'}), name))
         cases.append((iA.tobsr(blocksize=(4, 4)), iB,
-                     ('energy',
-                      {'krylov': 'gmres', 'degree': 2, 'maxiter': 3})))
+                      ('energy',
+                       {'krylov': 'gmres', 'degree': 2, 'maxiter': 3}), name))
 
         cases.append((iA.tobsr(blocksize=(4, 4)), iB,
-                     ('energy',
-                      {'krylov': 'gmres', 'degree': 2, 'maxiter': 3,
-                       'postfilter': {'theta': 0.05}})))
+                      ('energy',
+                       {'krylov': 'gmres', 'degree': 2, 'maxiter': 3,
+                        'postfilter': {'theta': 0.05}}), name))
         cases.append((iA.tobsr(blocksize=(4, 4)), iB,
-                     ('energy',
-                      {'krylov': 'gmres', 'degree': 2, 'maxiter': 3,
-                       'prefilter': {'theta': 0.05}})))
+                      ('energy',
+                       {'krylov': 'gmres', 'degree': 2, 'maxiter': 3,
+                        'prefilter': {'theta': 0.05}}), name))
 
+        name = 'gauge laplacian'
         A = gauge_laplacian(10, spacing=1.0, beta=0.21)
         B = np.ones((A.shape[0], 1))
-        cases.append((A, iB, ('jacobi',
-                              {'filter': True, 'weighting': 'diagonal'})))
-        cases.append((A, iB, ('jacobi',
-                              {'filter': True, 'weighting': 'local'})))
+        cases.append((A, iB, ('jacobi', {'filter': True, 'weighting': 'diagonal'}), name))
+        cases.append((A, iB, ('jacobi', {'filter': True, 'weighting': 'local'}), name))
 
-        cases.append((A, B, ('energy', {'krylov': 'cg'})))
-        cases.append((A, iB, ('energy', {'krylov': 'cgnr'})))
-        cases.append((A, iB, ('energy', {'krylov': 'gmres'})))
+        cases.append((A, B, ('energy', {'krylov': 'cg'}), name))
+        cases.append((A, iB, ('energy', {'krylov': 'cgnr'}), name))
+        cases.append((A, iB, ('energy', {'krylov': 'gmres'}), name))
 
-        cases.append((A.tobsr(blocksize=(2, 2)), B,
-                     ('energy',
-                      {'krylov': 'cgnr', 'degree': 2, 'maxiter': 3,
-                       'postfilter': {'theta': 0.05}})))
-        cases.append((A.tobsr(blocksize=(2, 2)), B,
-                     ('energy',
-                      {'krylov': 'cgnr', 'degree': 2, 'maxiter': 3,
-                       'prefilter': {'theta': 0.05}})))
-        cases.append((A.tobsr(blocksize=(2, 2)), B,
-                     ('energy',
-                      {'krylov': 'cgnr', 'degree': 2, 'maxiter': 3})))
-        cases.append((A.tobsr(blocksize=(2, 2)), iB,
-                     ('energy', {'krylov': 'cg'})))
-        cases.append((A.tobsr(blocksize=(2, 2)), B,
-                     ('energy',
-                      {'krylov': 'gmres', 'degree': 2, 'maxiter': 3})))
-
-        cases.append((A.tobsr(blocksize=(2, 2)), B,
-                     ('energy',
-                      {'krylov': 'gmres', 'degree': 2, 'maxiter': 3,
-                       'postfilter': {'theta': 0.05}})))
-        cases.append((A.tobsr(blocksize=(2, 2)), B,
-                     ('energy',
-                      {'krylov': 'gmres', 'degree': 2, 'maxiter': 3,
-                       'prefilter': {'theta': 0.05}})))
+        name = 'gauge laplacian bsr'
+        cases.append((A.tobsr(blocksize=(2, 2)), B, ('energy', {'krylov': 'cgnr', 'degree': 2, 'maxiter': 3, 'postfilter': {'theta': 0.05}}), name))
+        cases.append((A.tobsr(blocksize=(2, 2)), B, ('energy', {'krylov': 'cgnr', 'degree': 2, 'maxiter': 3, 'prefilter': {'theta': 0.05}}), name))
+        cases.append((A.tobsr(blocksize=(2, 2)), B, ('energy', {'krylov': 'cgnr', 'degree': 2, 'maxiter': 3}), name))
+        cases.append((A.tobsr(blocksize=(2, 2)), iB, ('energy', {'krylov': 'cg'}), name))
+        cases.append((A.tobsr(blocksize=(2, 2)), B, ('energy', {'krylov': 'gmres', 'degree': 2, 'maxiter': 3}), name))
+        cases.append((A.tobsr(blocksize=(2, 2)), B, ('energy', {'krylov': 'gmres', 'degree': 2, 'maxiter': 3, 'postfilter': {'theta': 0.05}}), name))
+        cases.append((A.tobsr(blocksize=(2, 2)), B, ('energy', {'krylov': 'gmres', 'degree': 2, 'maxiter': 3, 'prefilter': {'theta': 0.05}}), name))
 
         #
+        name = 'linear elasticity'
         A, B = linear_elasticity((10, 10))
-        cases.append((A, B, ('jacobi',
-                             {'filter': True, 'weighting': 'diagonal'})))
-        cases.append((A, B, ('jacobi',
-                             {'filter': True, 'weighting': 'local'})))
-        cases.append((A, B, ('jacobi',
-                             {'filter': True, 'weighting': 'block'})))
-
-        cases.append((A, B, ('energy', {'degree': 2})))
-        cases.append((A, B, ('energy',
-                     {'degree': 3, 'postfilter': {'theta': 0.05}})))
-        cases.append((A, B, ('energy',
-                     {'degree': 3, 'prefilter': {'theta': 0.05}})))
-        cases.append((A, B, ('energy', {'krylov': 'cgnr'})))
-        cases.append((A, B, ('energy', {'krylov': 'gmres', 'degree': 2})))
+        cases.append((A, B, ('jacobi', {'filter': True, 'weighting': 'diagonal'}), name))
+        cases.append((A, B, ('jacobi', {'filter': True, 'weighting': 'local'}), name))
+        cases.append((A, B, ('jacobi', {'filter': True, 'weighting': 'block'}), name))
+        cases.append((A, B, ('energy', {'degree': 2}), name))
+        cases.append((A, B, ('energy', {'degree': 3, 'postfilter': {'theta': 0.05}}), name))
+        cases.append((A, B, ('energy', {'degree': 3, 'prefilter': {'theta': 0.05}}), name))
+        cases.append((A, B, ('energy', {'krylov': 'cgnr'}), name))
+        cases.append((A, B, ('energy', {'krylov': 'gmres', 'degree': 2}), name))
 
         # Classic SA cases
-        for A, B, smooth in cases:
-            ml = smoothed_aggregation_solver(A, B=B, max_coarse=1,
-                                             max_levels=2, smooth=smooth)
+        for A, B, smooth, name in cases:
+            ml = smoothed_aggregation_solver(A, B=B, max_coarse=1, max_levels=2, smooth=smooth)
             P = ml.levels[0].P
             B = ml.levels[0].B
             R = ml.levels[1].B
@@ -463,7 +442,7 @@ class TestEnergyMin(TestCase):
 
         # Root-node cases
         counter = 0
-        for A, B, smooth in cases:
+        for A, B, smooth, name in cases:
             counter += 1
 
             if isinstance(smooth, tuple):
@@ -484,6 +463,9 @@ class TestEnergyMin(TestCase):
                 Bf_H = ml.levels[0].BH
                 Bc = ml.levels[1].B
                 P = ml.levels[0].P.tocsr()
+
+                T.eliminate_zeros()
+                P.eliminate_zeros()
 
                 # P should preserve B in its range, wherever P
                 # has enough nonzeros
@@ -515,19 +497,19 @@ class TestEnergyMin(TestCase):
         B = X['B']
 
         cases.append((A, B,
-                     ('energy', {'krylov': 'cg', 'degree': 2, 'maxiter': 3}),
-                     {'theta': 0.05}))
+                      ('energy', {'krylov': 'cg', 'degree': 2, 'maxiter': 3}),
+                      {'theta': 0.05}))
 
         cases.append((A, B,
-                     ('energy', {'krylov': 'gmres', 'degree': 2,
-                                 'maxiter': 3}),
-                     {'k': 3}))
+                      ('energy', {'krylov': 'gmres', 'degree': 2,
+                                  'maxiter': 3}),
+                      {'k': 3}))
 
         cases.append((A.tobsr(blocksize=(2, 2)),
-                     np.hstack((B, np.random.rand(B.shape[0], 1))),
-                     ('energy', {'krylov': 'cg', 'degree': 2,
-                                 'maxiter': 3}),
-                     {'theta': 0.1}))
+                      np.hstack((B, np.random.rand(B.shape[0], 1))),
+                      ('energy', {'krylov': 'cg', 'degree': 2,
+                                  'maxiter': 3}),
+                      {'theta': 0.1}))
 
         # Simple, imaginary-valued problems
         iA = 1.0j * A
@@ -535,18 +517,18 @@ class TestEnergyMin(TestCase):
                  + 1.0j * (1.0 + np.random.rand(iA.shape[0], 2))
 
         cases.append((iA, B,
-                     ('energy', {'krylov': 'cg', 'degree': 2, 'maxiter': 3}),
-                     {'theta': 0.05}))
+                      ('energy', {'krylov': 'cg', 'degree': 2, 'maxiter': 3}),
+                      {'theta': 0.05}))
 
         cases.append((iA, iB,
-                     ('energy', {'krylov': 'gmres', 'degree': 2,
-                                 'maxiter': 3}),
-                     {'k': 3}))
+                      ('energy', {'krylov': 'gmres', 'degree': 2,
+                                  'maxiter': 3}),
+                      {'k': 3}))
 
         cases.append((A.tobsr(blocksize=(2, 2)),
-                     np.hstack((B, np.random.rand(B.shape[0], 1))),
-                     ('energy', {'krylov': 'cg', 'degree': 2, 'maxiter': 3}),
-                     {'theta': 0.1}))
+                      np.hstack((B, np.random.rand(B.shape[0], 1))),
+                      ('energy', {'krylov': 'cg', 'degree': 2, 'maxiter': 3}),
+                      {'theta': 0.1}))
 
         for A, B, smooth, postfilter in cases:
             ml_nofilter = rootnode_solver(A, B=B, max_coarse=1, max_levels=2,
@@ -568,19 +550,19 @@ class TestEnergyMin(TestCase):
         B = X['B']
 
         cases.append((A, B,
-                     ('energy', {'krylov': 'cg', 'degree': 2, 'maxiter': 3}),
-                     {'theta': 0.05}))
+                      ('energy', {'krylov': 'cg', 'degree': 2, 'maxiter': 3}),
+                      {'theta': 0.05}))
 
         cases.append((A, B,
-                     ('energy', {'krylov': 'gmres', 'degree': 2,
-                                 'maxiter': 3}),
-                     {'k': 3}))
+                      ('energy', {'krylov': 'gmres', 'degree': 2,
+                                  'maxiter': 3}),
+                      {'k': 3}))
 
         cases.append((A.tobsr(blocksize=(2, 2)),
-                     np.hstack((B, np.random.rand(B.shape[0], 1))),
-                     ('energy', {'krylov': 'cg', 'degree': 2,
-                                 'maxiter': 3}),
-                     {'theta': 0.1}))
+                      np.hstack((B, np.random.rand(B.shape[0], 1))),
+                      ('energy', {'krylov': 'cg', 'degree': 2,
+                                  'maxiter': 3}),
+                      {'theta': 0.1}))
 
         # Simple, imaginary-valued problems
         iA = 1.0j * A
@@ -588,18 +570,18 @@ class TestEnergyMin(TestCase):
                  + 1.0j * (1.0 + np.random.rand(iA.shape[0], 2))
 
         cases.append((iA, B,
-                     ('energy', {'krylov': 'cg', 'degree': 2, 'maxiter': 3}),
-                     {'theta': 0.05}))
+                      ('energy', {'krylov': 'cg', 'degree': 2, 'maxiter': 3}),
+                      {'theta': 0.05}))
 
         cases.append((iA, iB,
-                     ('energy', {'krylov': 'gmres', 'degree': 2,
-                                 'maxiter': 3}),
-                     {'k': 3}))
+                      ('energy', {'krylov': 'gmres', 'degree': 2,
+                                  'maxiter': 3}),
+                      {'k': 3}))
 
         cases.append((A.tobsr(blocksize=(2, 2)),
-                     np.hstack((B, np.random.rand(B.shape[0], 1))),
-                     ('energy', {'krylov': 'cg', 'degree': 2, 'maxiter': 3}),
-                     {'theta': 0.1}))
+                      np.hstack((B, np.random.rand(B.shape[0], 1))),
+                      ('energy', {'krylov': 'cg', 'degree': 2, 'maxiter': 3}),
+                      {'theta': 0.1}))
 
         for A, B, smooth, prefilter in cases:
             ml_nofilter = rootnode_solver(A, B=B, max_coarse=1, max_levels=2,
@@ -615,14 +597,14 @@ class TestEnergyMin(TestCase):
 #
 #        U = bsr_matrix([[1,2],[2,1]], blocksize=(1,1))
 #        Sparsity_Pattern = bsr_matrix([[1,1],[1,1]],blocksize=(1,1))
-#        B = np.mat(np.array([[1],[1]]))
+#        B = np.array(np.array([[1],[1]]))
 #        BtBinv = [ np.array([[0.5]]), np.array([[0.5]]) ]
 #        colindices = [ np.array([0,1]), np.array([0,1]) ]
 #
 #        U = Satisfy_Constraints(U, Sparsity_Pattern, B, BtBinv, colindices)
 #
 #
-#        assert_equal(U.todense(), np.array([[0,1],[1,0]]))
+#        assert_equal(U.toarray(), np.array([[0,1],[1,0]]))
 #        assert_almost_equal(U*B, 0*U*B)
 #
 #    def test_block(self):
@@ -650,8 +632,8 @@ class TestEnergyMin(TestCase):
 #        for i in range(5):
 #            colindx = colindices[i]
 #            if len(colindx) > 0:
-#                Bi = np.mat(B)[colindx,:]
-#                BtBinv[i] = pinv2(Bi.T*Bi)
+#                Bi = np.array(B)[colindx,:]
+#                BtBinv[i] = pinv2(Bi.T.dot(Bi))
 #
 #        U = Satisfy_Constraints(U, Sparsity_Pattern, B, BtBinv, colindices)
 #        assert_almost_equal(U*B, 0*U*B)

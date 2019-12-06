@@ -1,4 +1,4 @@
-"""Solve an arbitrary system"""
+"""Solve an arbitrary system."""
 from __future__ import print_function
 
 
@@ -6,7 +6,7 @@ import numpy as np
 import scipy as sp
 from scipy.sparse import isspmatrix_csr, isspmatrix_bsr, csr_matrix
 from pyamg import smoothed_aggregation_solver
-from pyamg.util.linalg import ishermitian, norm
+from pyamg.util.linalg import ishermitian
 
 __all__ = ['solve', 'solver', 'solver_configuration']
 
@@ -17,12 +17,12 @@ def make_csr(A):
 
     Parameters
     ----------
-    A : {array, matrix, sparse matrix}
+    A : array, matrix, sparse matrix
         (n x n) matrix to convert to CSR
 
     Returns
     -------
-    A : {csr_matrix, bsr_matrix}
+    A : csr_matrix, bsr_matrix
         If A is csr_matrix or bsr_matrix, then do nothing and return A.
         Else, convert A to CSR if possible and return.
 
@@ -33,29 +33,27 @@ def make_csr(A):
     >>> A = poisson((40,40),format='csc')
     >>> Acsr = make_csr(A)
     Implicit conversion of A to CSR in pyamg.blackbox.make_csr
-    """
 
+    """
     # Convert to CSR or BSR if necessary
     if not (isspmatrix_csr(A) or isspmatrix_bsr(A)):
         try:
             A = csr_matrix(A)
             print('Implicit conversion of A to CSR in pyamg.blackbox.make_csr')
-        except:
+        except BaseException:
             raise TypeError('Argument A must have type csr_matrix or\
                     bsr_matrix, or be convertible to csr_matrix')
-    #
+
     if A.shape[0] != A.shape[1]:
         raise TypeError('Argument A must be a square')
-    #
+
     A = A.asfptype()
 
     return A
 
 
 def solver_configuration(A, B=None, verb=True):
-    """
-    Given an arbitrary matrix A, generate a dictionary of parameters with
-    which to generate a smoothed_aggregation_solver.
+    """Generate a dictionary of SA parameters for an arbitray matrix A.
 
     Parameters
     ----------
@@ -89,7 +87,6 @@ def solver_configuration(A, B=None, verb=True):
     >>> solver_config = solver_configuration(A,verb=False)
 
     """
-
     # Ensure acceptable format of A
     A = make_csr(A)
     config = {}
@@ -107,14 +104,14 @@ def solver_configuration(A, B=None, verb=True):
     # Symmetry dependent parameters
     if config['symmetry'] == 'hermitian':
         config['smooth'] = ('energy', {'krylov': 'cg', 'maxiter': 3,
-                            'degree': 2, 'weighting': 'local'})
+                                       'degree': 2, 'weighting': 'local'})
         config['presmoother'] = ('block_gauss_seidel',
                                  {'sweep': 'symmetric', 'iterations': 1})
         config['postsmoother'] = ('block_gauss_seidel',
                                   {'sweep': 'symmetric', 'iterations': 1})
     else:
         config['smooth'] = ('energy', {'krylov': 'gmres', 'maxiter': 3,
-                            'degree': 2, 'weighting': 'local'})
+                                       'degree': 2, 'weighting': 'local'})
         config['presmoother'] = ('gauss_seidel_nr',
                                  {'sweep': 'symmetric', 'iterations': 2})
         config['postsmoother'] = ('gauss_seidel_nr',
@@ -126,7 +123,7 @@ def solver_configuration(A, B=None, verb=True):
         if isspmatrix_bsr(A) and A.blocksize[0] > 1:
             bsize = A.blocksize[0]
             config['B'] = np.kron(np.ones((int(A.shape[0] / bsize), 1),
-                                  dtype=A.dtype), np.eye(bsize))
+                                          dtype=A.dtype), np.eye(bsize))
         else:
             config['B'] = np.ones((A.shape[0], 1), dtype=A.dtype)
     elif (isinstance(B, type(np.zeros((1,)))) or
@@ -148,7 +145,7 @@ def solver_configuration(A, B=None, verb=True):
 
     # Set non-symmetry related parameters
     config['strength'] = ('evolution', {'k': 2, 'proj_type': 'l2',
-                          'epsilon': 3.0})
+                                        'epsilon': 3.0})
     config['max_levels'] = 15
     config['max_coarse'] = 500
     config['coarse_solver'] = 'pinv'
@@ -159,21 +156,19 @@ def solver_configuration(A, B=None, verb=True):
 
 
 def solver(A, config):
-    """
-    Given a matrix A and a solver configuration dictionary, generate a
-    smoothed_aggregation_solver
+    """Generate an SA solver given matrix A and a configuration.
 
     Parameters
     ----------
-    A : {array, matrix, csr_matrix, bsr_matrix}
+    A : array, matrix, csr_matrix, bsr_matrix
         Matrix to invert, CSR or BSR format preferred for efficiency
-    config : {dict}
+    config : dict
         A dictionary of solver configuration parameters that is used to
         generate a smoothed aggregation solver
 
     Returns
     -------
-    ml : {smoothed_aggregation_solver}
+    ml : smoothed_aggregation_solver
         smoothed aggregation hierarchy
 
     Notes
@@ -191,7 +186,6 @@ def solver(A, config):
     >>> ml = solver(A,config)
 
     """
-
     # Convert A to acceptable format
     A = make_csr(A)
 
@@ -211,13 +205,14 @@ def solver(A, config):
                                         presmoother=config['presmoother'],
                                         postsmoother=config['postsmoother'],
                                         keep=config['keep'])
-    except:
+    except BaseException:
         raise TypeError('Failed generating smoothed_aggregation_solver')
 
 
 def solve(A, b, x0=None, tol=1e-5, maxiter=400, return_solver=False,
           existing_solver=None, verb=True, residuals=None):
-    """
+    """Solve Ax=b.
+
     Solve the arbitrary system Ax=b with the best out-of-the box choice for a
     solver.  The matrix A can be non-Hermitian, indefinite, Hermitian
     positive-definite, complex, etc...  Generic and robust settings for
@@ -226,22 +221,22 @@ def solve(A, b, x0=None, tol=1e-5, maxiter=400, return_solver=False,
 
     Parameters
     ----------
-    A : {array, matrix, csr_matrix, bsr_matrix}
+    A : array, matrix, csr_matrix, bsr_matrix
         Matrix to invert, CSR or BSR format preferred for efficiency
-    b : {array}
+    b : array
         Right hand side.
-    x0 : {array} : default random vector
-        Initial guess
-    tol : {float} : default 1e-5
+    x0 : array
+        Initial guess (default random vector)
+    tol : float
         Stopping criteria: relative residual r[k]/r[0] tolerance
-    maxiter : {int} : default 400
+    maxiter : int
         Stopping criteria: maximum number of allowable iterations
-    return_solver : {bool} : default False
+    return_solver : bool
         True: return the solver generated
-    existing_solver : {smoothed_aggregation_solver} : default None
+    existing_solver : smoothed_aggregation_solver
         If instance of a multilevel solver, then existing_solver is used
         to invert A, thus saving time on setup cost.
-    verb : {bool}
+    verb : bool
         If True, print verbose output during runtime
     residuals : list
         List to contain residual norms at each iteration.
@@ -250,7 +245,7 @@ def solve(A, b, x0=None, tol=1e-5, maxiter=400, return_solver=False,
 
     Returns
     -------
-    x : {array}
+    x : array
         Solution to Ax = b
     ml : multilevel_solver
         Optional return of the multilevel structure used for the solve
@@ -274,8 +269,8 @@ def solve(A, b, x0=None, tol=1e-5, maxiter=400, return_solver=False,
     >>> x = solve(A,b,verb=False)
     >>> print "%1.2e"%(norm(b - A*x)/norm(b))
     6.28e-06
-    """
 
+    """
     # Convert A to acceptable CSR/BSR format
     A = make_csr(A)
 
@@ -324,8 +319,8 @@ def solve(A, b, x0=None, tol=1e-5, maxiter=400, return_solver=False,
         r0 = b - A * x0
         rk = b - A * x
         M = existing_solver.aspreconditioner()
-        nr0 = np.sqrt(np.inner(np.conjugate(M*r0), r0))
-        nrk = np.sqrt(np.inner(np.conjugate(M*rk), rk))
+        nr0 = np.sqrt(np.inner(np.conjugate(M * r0), r0))
+        nrk = np.sqrt(np.inner(np.conjugate(M * rk), rk))
         print("  Residuals ||r_k||_M, ||r_0||_M = %1.2e, %1.2e" % (nrk, nr0))
         if np.abs(nr0) > 1e-15:
             print("  Residual reduction ||r_k||_M/||r_0||_M = %1.2e"

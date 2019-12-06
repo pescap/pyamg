@@ -1,4 +1,4 @@
-"""Algorithms related to graphs"""
+"""Algorithms related to graphs."""
 from __future__ import absolute_import
 
 
@@ -15,7 +15,7 @@ __all__ = ['maximal_independent_set', 'vertex_coloring', 'bellman_ford',
 def max_value(datatype):
     try:
         return np.iinfo(datatype).max
-    except:
+    except BaseException:
         return np.finfo(datatype).max
 
 
@@ -30,14 +30,13 @@ def asgraph(G):
 
 
 def maximal_independent_set(G, algo='serial', k=None):
-    """Compute a maximal independent vertex set for a graph
+    """Compute a maximal independent vertex set for a graph.
 
     Parameters
     ----------
     G : sparse matrix
         Symmetric matrix, preferably in sparse CSR or CSC format
         The nonzeros of G represent the edges of an undirected graph.
-
     algo : {'serial', 'parallel'}
         Algorithm used to compute the MIS
             * serial   : greedy serial algorithm
@@ -45,7 +44,7 @@ def maximal_independent_set(G, algo='serial', k=None):
 
     Returns
     -------
-    An array S where
+    S : array
         S[i] = 1 if vertex i is in the MIS
         S[i] = 0 otherwise
 
@@ -57,7 +56,6 @@ def maximal_independent_set(G, algo='serial', k=None):
     greedy serial algorithm.
 
     """
-
     G = asgraph(G)
     N = G.shape[0]
 
@@ -81,29 +79,30 @@ def maximal_independent_set(G, algo='serial', k=None):
 
 
 def vertex_coloring(G, method='MIS'):
-    """Compute a vertex coloring of a graph
+    """Compute a vertex coloring of a graph.
 
     Parameters
     ----------
     G : sparse matrix
         Symmetric matrix, preferably in sparse CSR or CSC format
         The nonzeros of G represent the edges of an undirected graph.
-    method : {string}
+    method : string
         Algorithm used to compute the vertex coloring:
+
             * 'MIS' - Maximal Independent Set
             * 'JP'  - Jones-Plassmann (parallel)
             * 'LDF' - Largest-Degree-First (parallel)
 
     Returns
     -------
-    An array of vertex colors (integers beginning at 0)
+    coloring : array
+        An array of vertex colors (integers beginning at 0)
 
     Notes
     -----
     Diagonal entries in the G (self loops) will be ignored.
 
     """
-
     G = asgraph(G)
     N = G.shape[0]
 
@@ -125,24 +124,21 @@ def vertex_coloring(G, method='MIS'):
 
 
 def bellman_ford(G, seeds, maxiter=None):
-    """
-    Bellman-Ford iteration
+    """Bellman-Ford iteration.
 
     Parameters
     ----------
+    G : sparse matrix
 
     Returns
     -------
-
-    Notes
-    -----
+    distances : array
+    nearest_seed : array
 
     References
     ----------
     CLR
 
-    Examples
-    --------
     """
     G = asgraph(G)
     N = G.shape[0]
@@ -179,19 +175,28 @@ def bellman_ford(G, seeds, maxiter=None):
 
 
 def lloyd_cluster(G, seeds, maxiter=10):
-    """Perform Lloyd clustering on graph with weighted edges
+    """Perform Lloyd clustering on graph with weighted edges.
 
     Parameters
     ----------
-    G : csr_matrix or csc_matrix
+    G : csr_matrix, csc_matrix
         A sparse NxN matrix where each nonzero entry G[i,j] is the distance
         between nodes i and j.
-    seeds : {int, array}
+    seeds : int array
         If seeds is an integer, then its value determines the number of
         clusters.  Otherwise, seeds is an array of unique integers between 0
         and N-1 that will be used as the initial seeds for clustering.
     maxiter : int
         The maximum number of iterations to perform.
+
+    Returns
+    -------
+    distances : array
+        final distances
+    clusters : int array
+        id of each cluster of points
+    seeds : int array
+        index of each seed
 
     Notes
     -----
@@ -236,30 +241,52 @@ def lloyd_cluster(G, seeds, maxiter=10):
 
 
 def breadth_first_search(G, seed):
-    """Breadth First search of a graph
+    """Breadth First search of a graph.
 
     Parameters
     ----------
+    G : csr_matrix, csc_matrix
+        A sparse NxN matrix where each nonzero entry G[i,j] is the distance
+        between nodes i and j.
+    seed : int
+        Index of the seed location
 
     Returns
     -------
-
-    Notes
-    -----
-
-    References
-    ----------
-    CLR
+    order : int array
+        Breadth first order
+    level : int array
+        Final levels
 
     Examples
     --------
-    """
-    # TODO document
+    0---2
+    |  /
+    | /
+    1---4---7---8---9
+    |  /|  /
+    | / | /
+    3/  6/
+    |
+    |
+    5
+    >>> import numpy as np
+    >>> import pyamg
+    >>> import scipy.sparse as sparse
+    >>> edges = np.array([[0,1],[0,2],[1,2],[1,3],[1,4],[3,4],[3,5],
+                          [4,6], [4,7], [6,7], [7,8], [8,9]])
+    >>> N = np.max(edges.ravel())+1
+    >>> data = np.ones((edges.shape[0],))
+    >>> A = sparse.coo_matrix((data, (edges[:,0], edges[:,1])), shape=(N,N))
+    >>> c, l = pyamg.graph.breadth_first_search(A, 0)
+    >>> print(l)
+    >>> print(c)
+    [0 1 1 2 2 3 3 3 4 5]
+    [0 1 2 3 4 5 6 7 8 9]
 
+    """
     G = asgraph(G)
     N = G.shape[0]
-
-    # Check symmetry?
 
     order = np.empty(N, G.indptr.dtype)
     level = np.empty(N, G.indptr.dtype)
@@ -272,7 +299,7 @@ def breadth_first_search(G, seed):
 
 
 def connected_components(G):
-    """Compute the connected components of a graph
+    """Compute the connected components of a graph.
 
     The connected components of a graph G, which is represented by a
     symmetric sparse matrix, are labeled with the integers 0,1,..(K-1) where
@@ -304,11 +331,11 @@ def connected_components(G):
     [0 1 2]
     >>> print connected_components( [[0,1,0,0],[1,0,0,0],[0,0,0,1],[0,0,1,0]] )
     [0 0 1 1]
+
     """
     G = asgraph(G)
     N = G.shape[0]
 
-    # Check symmetry?
     components = np.empty(N, G.indptr.dtype)
 
     fn = amg_core.connected_components
@@ -318,14 +345,24 @@ def connected_components(G):
 
 
 def symmetric_rcm(A):
-    """
-    Symmetric Reverse Cutthill-McKee
+    """Symmetric Reverse Cutthill-McKee.
+
+    Parameters
+    ----------
+    A : sparse matrix
+        Sparse matrix
+
+    Returns
+    -------
+    B : sparse matrix
+        Permuted matrix with reordering
+
+    Notes
+    -----
     Get a pseudo-peripheral node, then call BFS
 
-    return a symmetric permuted matrix
-
-    Example
-    -------
+    Examples
+    --------
     >>> from pyamg import gallery
     >>> from pyamg.graph import symmetric_rcm
     >>> n = 200
@@ -333,16 +370,17 @@ def symmetric_rcm(A):
     >>> A = gallery.sprand(n, n, density, format='csr')
     >>> S = A + A.T
     >>> # try the visualizations
-    >>> #import pylab
-    >>> #pylab.figure()
-    >>> #pylab.subplot(121)
-    >>> #pylab.spy(S,marker='.')
-    >>> #pylab.subplot(122)
-    >>> #pylab.spy(symmetric_rcm(S),marker='.')
+    >>> import matplotlib.pyplot as plt
+    >>> plt.figure()
+    >>> plt.subplot(121)
+    >>> plt.spy(S,marker='.')
+    >>> plt.subplot(122)
+    >>> plt.spy(symmetric_rcm(S),marker='.')
 
     See Also
     --------
     pseudo_peripheral_node
+
     """
     n = A.shape[0]
 
@@ -356,8 +394,26 @@ def symmetric_rcm(A):
 
 
 def pseudo_peripheral_node(A):
-    """
+    """Find a pseudo peripheral node.
+
+    Parameters
+    ----------
+    A : sparse matrix
+        Sparse matrix
+
+    Returns
+    -------
+    x : int
+        Locaiton of the node
+    order : array
+        BFS ordering
+    level : array
+        BFS levels
+
+    Notes
+    -----
     Algorithm in Saad
+
     """
     from pyamg.graph import breadth_first_search
     n = A.shape[0]
@@ -368,7 +424,7 @@ def pseudo_peripheral_node(A):
     x = int(np.random.rand() * n)
     delta = 0
 
-    while 1:
+    while True:
         # do a level-set traversal from x
         order, level = breadth_first_search(A, x)
 

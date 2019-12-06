@@ -49,7 +49,7 @@ class TestStrengthOfConnection(TestCase):
                 expected = reference_classical_soc(A, theta)
 
                 assert_equal(result.nnz, expected.nnz)
-                assert_array_almost_equal(result.todense(), expected.todense())
+                assert_array_almost_equal(result.toarray(), expected.toarray())
 
     def test_classical_strength_of_connection_min(self):
         for A in self.cases:
@@ -58,7 +58,7 @@ class TestStrengthOfConnection(TestCase):
                 expected = reference_classical_soc(A, theta, norm='min')
 
                 assert_equal(result.nnz, expected.nnz)
-                assert_array_almost_equal(result.todense(), expected.todense())
+                assert_array_almost_equal(result.toarray(), expected.toarray())
 
     def test_symmetric_strength_of_connection(self):
         for A in self.cases:
@@ -67,7 +67,7 @@ class TestStrengthOfConnection(TestCase):
                 expected = reference_symmetric_soc(A, theta)
 
                 assert_equal(result.nnz, expected.nnz)
-                assert_array_almost_equal(result.todense(), expected.todense())
+                assert_array_almost_equal(result.toarray(), expected.toarray())
 
     def test_distance_strength_of_connection(self):
         data = load_example('airfoil')
@@ -79,7 +79,7 @@ class TestStrengthOfConnection(TestCase):
                 result = distance_soc(A, V, theta=theta)
                 expected = reference_distance_soc(A, V, theta=theta)
                 assert_equal(result.nnz, expected.nnz)
-                assert_array_almost_equal(result.todense(), expected.todense())
+                assert_array_almost_equal(result.toarray(), expected.toarray())
 
         for (A, V) in cases:
             for theta in [0.5, 1.0, 1.5]:
@@ -87,7 +87,7 @@ class TestStrengthOfConnection(TestCase):
                 expected = reference_distance_soc(A, V, theta=theta,
                                                   relative_drop=False)
                 assert_equal(result.nnz, expected.nnz)
-                assert_array_almost_equal(result.todense(), expected.todense())
+                assert_array_almost_equal(result.toarray(), expected.toarray())
 
     def test_incomplete_mat_mult_csr(self):
         # Test a critical helper routine for evolution_soc(...)
@@ -98,20 +98,20 @@ class TestStrengthOfConnection(TestCase):
         cases = []
 
         # 1x1 tests
-        A = csr_matrix(np.mat([[1.1]]))
-        B = csr_matrix(np.mat([[1.0]]))
-        A2 = csr_matrix(np.mat([[0.]]))
-        mask = csr_matrix(np.mat([[1.]]))
+        A = csr_matrix(np.array([[1.1]]))
+        B = csr_matrix(np.array([[1.0]]))
+        A2 = csr_matrix(np.array([[0.]]))
+        mask = csr_matrix(np.array([[1.]]))
         cases.append((A, A, mask))
         cases.append((A, B, mask))
         cases.append((A, A2, mask))
         cases.append((A2, A2, mask))
 
         # 2x2 tests
-        A = csr_matrix(np.mat([[1., 2.], [2., 4.]]))
-        B = csr_matrix(np.mat([[1.3, 2.], [2.8, 4.]]))
-        A2 = csr_matrix(np.mat([[1.3, 0.], [0., 4.]]))
-        B2 = csr_matrix(np.mat([[1.3, 0.], [2., 4.]]))
+        A = csr_matrix(np.array([[1., 2.], [2., 4.]]))
+        B = csr_matrix(np.array([[1.3, 2.], [2.8, 4.]]))
+        A2 = csr_matrix(np.array([[1.3, 0.], [0., 4.]]))
+        B2 = csr_matrix(np.array([[1.3, 0.], [2., 4.]]))
         mask = csr_matrix((np.ones(4), (np.array([0, 0, 1, 1]),
                                         np.array([0, 1, 0, 1]))), shape=(2, 2))
         cases.append((A, A, mask))
@@ -134,11 +134,11 @@ class TestStrengthOfConnection(TestCase):
         cases.append((A2, B2, mask))
 
         # 5x5 tests
-        A = np.mat([[0., 16.9, 6.4, 0.0, 5.8],
-                    [16.9, 13.8, 7.2, 0., 9.5],
-                    [6.4, 7.2, 12., 6.1, 5.9],
-                    [0.0, 0., 6.1, 0., 0.],
-                    [5.8, 9.5, 5.9, 0., 13.]])
+        A = np.array([[0., 16.9, 6.4, 0.0, 5.8],
+                      [16.9, 13.8, 7.2, 0., 9.5],
+                      [6.4, 7.2, 12., 6.1, 5.9],
+                      [0.0, 0., 6.1, 0., 0.],
+                      [5.8, 9.5, 5.9, 0., 13.]])
         C = A.copy()
         C[1, 0] = 3.1
         C[3, 2] = 10.1
@@ -193,12 +193,11 @@ class TestStrengthOfConnection(TestCase):
         cases.append((C, C, mask))
 
         # Imaginary tests
-        A = np.mat([[0.0 + 0.j, 0.0 + 16.9j, 6.4 + 1.2j, 0.0 + 0.j, 0.0 + 0.j],
-                    [16.9 + 0.j, 13.8 + 0.j, 7.2 + 0.j, 0.0 + 0.j, 0.0 + 9.5j],
-                    [0.0 + 6.4j, 7.2 - 8.1j, 12.0 + 0.j, 6.1 + 0.j, 5.9 + 0.j],
-                    [0.0 + 0.j, 0.0 + 0.j, 6.1 + 0.j, 0.0 + 0.j, 0.0 + 0.j],
-                    [5.8 + 0.j, -4.0 + 9.5j, -3.2 - 5.9j,
-                     0.0 + 0.j, 13.0 + 0.j]])
+        A = np.array([[0.0 + 0.j, 0.0 + 16.9j, 6.4 + 1.2j, 0.0 + 0.j, 0.0 + 0.j],
+                      [16.9 + 0.j, 13.8 + 0.j, 7.2 + 0.j, 0.0 + 0.j, 0.0 + 9.5j],
+                      [0.0 + 6.4j, 7.2 - 8.1j, 12.0 + 0.j, 6.1 + 0.j, 5.9 + 0.j],
+                      [0.0 + 0.j, 0.0 + 0.j, 6.1 + 0.j, 0.0 + 0.j, 0.0 + 0.j],
+                      [5.8 + 0.j, -4.0 + 9.5j, -3.2 - 5.9j, 0.0 + 0.j, 13.0 + 0.j]])
         C = A.copy()
         C[1, 0] = 3.1j - 1.3
         C[3, 2] = -10.1j + 9.7
@@ -296,7 +295,7 @@ class TestStrengthOfConnection(TestCase):
             expected = reference_evolution_soc(ca['A'], ca['B'],
                                                epsilon=ca['epsilon'],
                                                k=ca['k'], proj_type=ca['proj'])
-            assert_array_almost_equal(result.todense(), expected.todense(),
+            assert_array_almost_equal(result.toarray(), expected.toarray(),
                                       decimal=4)
 
         # Test Scale Invariance for multiple near nullspace candidates
@@ -315,8 +314,8 @@ class TestStrengthOfConnection(TestCase):
                                       Dinv*B, epsilon=4.0, k=2,
                                       proj_type="D_A",
                                       symmetrize_measure=False)
-        assert_array_almost_equal(result_scaled.todense(),
-                                  result_unscaled.todense(), decimal=2)
+        assert_array_almost_equal(result_scaled.toarray(),
+                                  result_unscaled.toarray(), decimal=2)
 
 
 # Define Complex tests
@@ -353,7 +352,7 @@ class TestComplexStrengthOfConnection(TestCase):
                 expected = reference_classical_soc(A, theta)
 
                 assert_equal(result.nnz, expected.nnz)
-                assert_array_almost_equal(result.todense(), expected.todense())
+                assert_array_almost_equal(result.toarray(), expected.toarray())
 
     def test_symmetric_strength_of_connection(self):
         for A in self.cases:
@@ -362,7 +361,7 @@ class TestComplexStrengthOfConnection(TestCase):
                 result = symmetric_soc(A, theta)
 
                 assert_equal(result.nnz, expected.nnz)
-                assert_array_almost_equal(result.todense(), expected.todense())
+                assert_array_almost_equal(result.toarray(), expected.toarray())
 
     def test_evolution_strength_of_connection(self):
         cases = []
@@ -398,7 +397,7 @@ class TestComplexStrengthOfConnection(TestCase):
             expected = reference_evolution_soc(ca['A'], ca['B'],
                                                epsilon=ca['epsilon'],
                                                k=ca['k'], proj_type=ca['proj'])
-            assert_array_almost_equal(result.todense(), expected.todense())
+            assert_array_almost_equal(result.toarray(), expected.toarray())
 
         # Test Scale Invariance for a single candidate
         A = 1.0j*poisson((5, 5), format='csr')
@@ -416,8 +415,8 @@ class TestComplexStrengthOfConnection(TestCase):
         result_scaled = evolution_soc(D*A*D, Dinv*B, epsilon=4.0, k=2,
                                       proj_type="D_A",
                                       symmetrize_measure=False)
-        assert_array_almost_equal(result_scaled.todense(),
-                                  result_unscaled.todense(), decimal=2)
+        assert_array_almost_equal(result_scaled.toarray(),
+                                  result_unscaled.toarray(), decimal=2)
 
         # Test that the l2 and D_A are the same for the 1 candidate case
         scipy.random.seed(0)  # make results deterministic
@@ -428,7 +427,7 @@ class TestComplexStrengthOfConnection(TestCase):
         resultl2 = evolution_soc(D*A*D, Dinv*B, epsilon=4.0,
                                  k=2, proj_type="l2",
                                  symmetrize_measure=False)
-        assert_array_almost_equal(resultDA.todense(), resultl2.todense())
+        assert_array_almost_equal(resultDA.toarray(), resultl2.toarray())
 
         # Test Scale Invariance for multiple candidates
         (A, B) = linear_elasticity((5, 5), format='bsr')
@@ -447,8 +446,8 @@ class TestComplexStrengthOfConnection(TestCase):
         result_scaled = evolution_soc((D*A*D).tobsr(blocksize=(2, 2)), Dinv*B,
                                       epsilon=4.0, k=2, proj_type="D_A",
                                       symmetrize_measure=False)
-        assert_array_almost_equal(result_scaled.todense(),
-                                  result_unscaled.todense(), decimal=2)
+        assert_array_almost_equal(result_scaled.toarray(),
+                                  result_unscaled.toarray(), decimal=2)
 
 
 # reference implementations for unittests  #
@@ -473,17 +472,17 @@ def reference_classical_soc(A, theta, norm='abs'):
     max_offdiag[:] = np.finfo(S.data.dtype).min
 
     # Note abs(.) takes the complex modulus
-    if norm=='abs':
+    if norm == 'abs':
         for i, v in zip(S.row, S.data):
             max_offdiag[i] = max(max_offdiag[i], abs(v))
-    if norm=='min':
+    if norm == 'min':
         for i, v in zip(S.row, S.data):
             max_offdiag[i] = max(max_offdiag[i], -v)
 
     # strong connections
-    if norm=='abs':
+    if norm == 'abs':
         mask = np.abs(S.data) >= (theta * max_offdiag[S.row])
-    if norm=='min':
+    if norm == 'min':
         mask = -S.data >= (theta * max_offdiag[S.row])
 
     S.row = S.row[mask]
@@ -583,7 +582,7 @@ def reference_evolution_soc(A, B, epsilon=4.0, k=2, proj_type="l2"):
     # Preliminaries
     near_zero = np.finfo(float).eps
     sqrt_near_zero = np.sqrt(np.sqrt(near_zero))
-    Bmat = np.mat(B)
+    Bmat = np.array(B)
     A.eliminate_zeros()
     A.sort_indices()
     dimen = A.shape[1]
@@ -632,8 +631,8 @@ def reference_evolution_soc(A, B, epsilon=4.0, k=2, proj_type="l2"):
     del mask
 
     # Calculate strength based on constrained min problem of
-    LHS = np.mat(np.zeros((NullDim+1, NullDim+1)), dtype=A.dtype)
-    RHS = np.mat(np.zeros((NullDim+1, 1)), dtype=A.dtype)
+    LHS = np.zeros((NullDim+1, NullDim+1), dtype=A.dtype)
+    RHS = np.zeros((NullDim+1,), dtype=A.dtype)
 
     # Choose tolerance for dropping "numerically zero" values later
     t = Atilde.dtype.char
@@ -652,7 +651,7 @@ def reference_evolution_soc(A, B, epsilon=4.0, k=2, proj_type="l2"):
         colindx = Atilde.indices[rowstart:rowend]
 
         # Local diagonal of A is used for scale invariant min problem
-        D_A = np.mat(np.eye(length, dtype=A.dtype))
+        D_A = np.eye(length, dtype=A.dtype)
         if proj_type == "D_A":
             for j in range(length):
                 D_A[j, j] = D[colindx[j]]
@@ -667,24 +666,25 @@ def reference_evolution_soc(A, B, epsilon=4.0, k=2, proj_type="l2"):
             Atilde.data[rowstart:rowend] = 1.0
         else:
             # Grab out what we want from Atilde and B.  Put into zi, Bi
-            zi = np.mat(Atilde.data[rowstart:rowend]).T
+            zi = Atilde.data[rowstart:rowend]
 
             Bi = Bmat[colindx, :]
 
             # Construct constrained min problem
-            LHS[0:NullDim, 0:NullDim] = 2.0*Bi.H*D_A*Bi
-            LHS[0:NullDim, NullDim] = D_A[iInRow, iInRow]*Bi[iInRow, :].H
+            CC = D_A[iInRow, iInRow]
+            LHS[0:NullDim, 0:NullDim] = 2.0*Bi.conj().T.dot(D_A.dot(Bi))
+            LHS[0:NullDim, NullDim] = D_A[iInRow, iInRow]*(Bi[iInRow, :].conj().T)
             LHS[NullDim, 0:NullDim] = Bi[iInRow, :]
-            RHS[0:NullDim, 0] = 2.0*Bi.H*D_A*zi
-            RHS[NullDim, 0] = zi[iInRow, 0]
+            RHS[0:NullDim] = 2.0*Bi.conj().T.dot(D_A.dot(zi))
+            RHS[NullDim] = zi[iInRow]
 
             # Calc Soln to Min Problem
-            x = np.mat(pinv(LHS))*RHS
+            x = pinv(LHS).dot(RHS)
 
             # Calculate best constrained approximation to zi with span(Bi), and
             # filter out "numerically" zero values.  This is important because
             # we look only at the sign of values below when calculating angle.
-            zihat = Bi*x[:-1]
+            zihat = Bi.dot(x[:-1])
             tol_i = np.max(np.abs(zihat))*tol
             zihat.real[np.abs(zihat.real) < tol_i] = 0.0
             if np.iscomplexobj(zihat):

@@ -1,5 +1,4 @@
-"""Basic PyAMG demo showing AMG standalone convergence versus preconditioned CG
-with AMG"""
+"""Basic PyAMG demo showing AMG standalone convergence versus preconditioned CG with AMG."""
 from __future__ import print_function
 
 import scipy as sp
@@ -11,6 +10,7 @@ __all__ = ['demo']
 
 
 def demo():
+    """Outline basic demo."""
     A = poisson((100, 100), format='csr')  # 2D FD Poisson problem
     B = None                               # no near-null spaces guesses for SA
     b = sp.rand(A.shape[0], 1)          # a random right-hand side
@@ -43,16 +43,16 @@ def demo():
 
     # Plot convergence history
     try:
-        import pylab
-        pylab.figure()
-        pylab.title('Convergence History')
-        pylab.xlabel('Iteration')
-        pylab.ylabel('Relative Residual')
-        pylab.semilogy(standalone_residuals, label='Standalone',
-                       linestyle='-', marker='o')
-        pylab.semilogy(accelerated_residuals, label='Accelerated',
-                       linestyle='-', marker='s')
-        pylab.legend()
-        pylab.show()
+        import matplotlib.pyplot as plt
+        plt.figure()
+        plt.title('Convergence History')
+        plt.xlabel('Iteration')
+        plt.ylabel('Relative Residual')
+        plt.semilogy(standalone_residuals, label='Standalone',
+                     linestyle='-', marker='o')
+        plt.semilogy(accelerated_residuals, label='Accelerated',
+                     linestyle='-', marker='s')
+        plt.legend()
+        plt.show()
     except ImportError:
         print("\n\nNote: pylab not available on your system.")

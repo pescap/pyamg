@@ -11,16 +11,15 @@ __all__ = ['gmres_mgs']
 
 
 def apply_givens(Q, v, k):
-    '''
-    Apply the first k Givens rotations in Q to v
+    """Apply the first k Givens rotations in Q to v.
 
     Parameters
     ----------
-    Q : {list}
+    Q : list
         list of consecutive 2x2 Givens rotations
-    v : {array}
+    v : array
         vector to apply the rotations to
-    k : {int}
+    k : int
         number of rotations to apply.
 
     Returns
@@ -32,8 +31,8 @@ def apply_givens(Q, v, k):
     This routine is specialized for GMRES.  It assumes that the first Givens
     rotation is for dofs 0 and 1, the second Givens rotation is for
     dofs 1 and 2, and so on.
-    '''
 
+    """
     for j in range(k):
         Qloc = Q[j]
         v[j:j+2] = np.dot(Qloc, v[j:j+2])
@@ -41,36 +40,36 @@ def apply_givens(Q, v, k):
 
 def gmres_mgs(A, b, x0=None, tol=1e-5, restrt=None, maxiter=None, xtype=None,
               M=None, callback=None, residuals=None, reorth=False):
-    '''
-    Generalized Minimum Residual Method (GMRES)
-        GMRES iteratively refines the initial solution guess to the system
-        Ax = b
-        Modified Gram-Schmidt version
+    """Generalized Minimum Residual Method (GMRES) based on MGS.
+
+    GMRES iteratively refines the initial solution guess to the system
+    Ax = b
+    Modified Gram-Schmidt version
 
     Parameters
     ----------
-    A : {array, matrix, sparse matrix, LinearOperator}
+    A : array, matrix, sparse matrix, LinearOperator
         n x n, linear system to solve
-    b : {array, matrix}
+    b : array, matrix
         right hand side, shape is (n,) or (n,1)
-    x0 : {array, matrix}
+    x0 : array, matrix
         initial guess, default is a vector of zeros
     tol : float
         relative convergence tolerance, i.e. tol is scaled by the norm
         of the initial preconditioned residual
-    restrt : {None, int}
+    restrt : None, int
         - if int, restrt is max number of inner iterations
           and maxiter is the max number of outer iterations
         - if None, do not restart GMRES, and max number of inner iterations
           is maxiter
-    maxiter : {None, int}
+    maxiter : None, int
         - if restrt is None, maxiter is the max number of inner iterations
           and GMRES does not restart
         - if restrt is int, maxiter is the max number of outer iterations,
           and restrt is the max number of inner iterations
     xtype : type
         dtype for the solution, default is automatic type detection
-    M : {array, matrix, sparse matrix, LinearOperator}
+    M : array, matrix, sparse matrix, LinearOperator
         n x n, inverted preconditioner, i.e. solve M A x = M b.
     callback : function
         User-supplied function is called after each iteration as
@@ -125,7 +124,8 @@ def gmres_mgs(A, b, x0=None, tol=1e-5, restrt=None, maxiter=None, xtype=None,
        http://www-users.cs.umn.edu/~saad/books.html
 
     .. [2] C. T. Kelley, http://www4.ncsu.edu/~ctk/matlab_roots.html
-    '''
+
+    """
     # Convert inputs to linear system, with error checking
     A, M, x, b, postprocess = make_system(A, M, x0, b)
     dimen = A.shape[0]
@@ -330,7 +330,7 @@ def gmres_mgs(A, b, x0=None, tol=1e-5, restrt=None, maxiter=None, xtype=None,
 
         # Find best update to x in Krylov Space V.  Solve inner x inner system.
         y = sp.linalg.solve(H[0:inner+1, 0:inner+1].T, g[0:inner+1])
-        update = np.ravel(np.mat(V[:inner+1, :]).T*y.reshape(-1, 1))
+        update = np.ravel(V[:inner+1, :].T.dot(y.reshape(-1, 1)))
         x = x + update
         r = b - np.ravel(A*x)
 

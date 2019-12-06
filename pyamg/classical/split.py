@@ -1,8 +1,7 @@
-"""Functions to compute C/F splittings for use in Classical AMG
+"""Functions to compute C/F splittings for use in Classical AMG.
 
 Overview
 --------
-
 A C/F splitting is a partitioning of the nodes in the graph of as connection
 matrix (denoted S for strength) into sets of C (coarse) and F (fine) nodes.
 The C-nodes are promoted to the coarser grid while the F-nodes are retained
@@ -14,16 +13,14 @@ degrees of freedom.
 
 Representation
 --------------
-
 C/F splitting is represented by an array with ones for all the C-nodes
 and zeros for the F-nodes.
 
 
 C/F Splitting Methods
 ---------------------
-
 RS : Original Ruge-Stuben method
-    - Produces good C/F splittings but is inherently serial.
+    - Produces good C/F splittings.
     - May produce AMG hierarchies with relatively high operator complexities.
     - See References [1] and [4]
 
@@ -40,13 +37,13 @@ PMISc: Parallel Modified Independent Set in Color
     - Augments random weights with a (graph) vertex coloring
     - See References [1]
 
-CLJP: Clearly-Luby-Jones-Plassmann
+CLJP: Cleary-Luby-Jones-Plassmann
     - Parallel method with cost and complexity comparable to Ruge-Stuben.
     - Convergence can deteriorate with increasing problem
       size on structured meshes.
     - See References [1] and [2]
 
-CLJP-c: Clearly-Luby-Jones-Plassmann in Color
+CLJP-c: Cleary-Luby-Jones-Plassmann in Color
     - Parallel method with cost and complexity comparable to Ruge-Stuben.
     - Better scalability than CLJP on structured meshes.
     - See References [1]
@@ -54,7 +51,6 @@ CLJP-c: Clearly-Luby-Jones-Plassmann in Color
 
 Summary
 -------
-
 In general, methods that use a graph coloring perform better on structured
 meshes [1].  Unstructured meshes do not appear to benefit substantially
 from coloring.
@@ -72,7 +68,6 @@ from coloring.
 
 References
 ----------
-
 ..  [1] Cleary AJ, Falgout RD, Henson VE, Jones JE.
     "Coarse-grid selection for parallel algebraic multigrid"
     Proceedings of the 5th International Symposium on Solving Irregularly
@@ -92,9 +87,7 @@ References
     Frontiers in Applied Mathematics, vol. 3.
     SIAM: Philadelphia, PA, 1987; 73-130.
 
-
 """
-
 import numpy as np
 import scipy as sp
 from scipy.sparse import csr_matrix, isspmatrix_csr
@@ -103,10 +96,10 @@ from pyamg.graph import vertex_coloring
 from pyamg import amg_core
 from pyamg.util.utils import remove_diagonal
 
-__all__ = ['RS', 'PMIS', 'PMISc', 'MIS']
+__all__ = ['RS', 'PMIS', 'PMISc', 'CLJP', 'CLJPc', 'MIS']
 
 
-def RS(S):
+def RS(S, second_pass=False):
     """Compute a C/F splitting using Ruge-Stuben coarsening
 
     Parameters
@@ -114,6 +107,9 @@ def RS(S):
     S : csr_matrix
         Strength of connection matrix indicating the strength between nodes i
         and j (S_ij)
+    second_pass : bool, default False
+        Perform second pass of classical AMG coarsening. Can be important for
+        classical AMG interpolation. Typically not done in parallel (e.g. Hypre).
 
     Returns
     -------
@@ -133,7 +129,7 @@ def RS(S):
 
     References
     ----------
-    .. [5] Ruge JW, Stuben K.  "Algebraic multigrid (AMG)"
+    .. [1] Ruge JW, Stuben K.  "Algebraic multigrid (AMG)"
        In Multigrid Methods, McCormick SF (ed.),
        Frontiers in Applied Mathematics, vol. 3.
        SIAM: Philadelphia, PA, 1987; 73-130.
@@ -144,19 +140,23 @@ def RS(S):
     S = remove_diagonal(S)
 
     T = S.T.tocsr()  # transpose S for efficient column access
-
     splitting = np.empty(S.shape[0], dtype='intc')
+    influence = np.zeros((S.shape[0],), dtype='intc')
 
     amg_core.rs_cf_splitting(S.shape[0],
                              S.indptr, S.indices,
                              T.indptr, T.indices,
+                             influence,
                              splitting)
+    if second_pass:
+        amg_core.rs_cf_splitting_pass2(S.shape[0], S.indptr,
+                                       S.indices, splitting)
 
     return splitting
 
 
 def PMIS(S):
-    """C/F splitting using the Parallel Modified Independent Set method
+    """C/F splitting using the Parallel Modified Independent Set method.
 
     Parameters
     ----------
@@ -193,7 +193,7 @@ def PMIS(S):
 
 
 def PMISc(S, method='JP'):
-    """C/F splitting using Parallel Modified Independent Set (in color)
+    """C/F splitting using Parallel Modified Independent Set (in color).
 
     PMIS-c, or PMIS in color, improves PMIS by perturbing the initial
     random weights with weights determined by a vertex coloring.
@@ -238,7 +238,7 @@ def PMISc(S, method='JP'):
 
 
 def CLJP(S, color=False):
-    """Compute a C/F splitting using the parallel CLJP algorithm
+    """Compute a C/F splitting using the parallel CLJP algorithm.
 
     Parameters
     ----------
@@ -292,7 +292,7 @@ def CLJP(S, color=False):
 
 
 def CLJPc(S):
-    """Compute a C/F splitting using the parallel CLJP-c algorithm
+    """Compute a C/F splitting using the parallel CLJP-c algorithm.
 
     CLJP-c, or CLJP in color, improves CLJP by perturbing the initial
     random weights with weights determined by a vertex coloring.
@@ -331,7 +331,7 @@ def CLJPc(S):
 
 
 def MIS(G, weights, maxiter=None):
-    """Compute a maximal independent set of a graph in parallel
+    """Compute a maximal independent set of a graph in parallel.
 
     Parameters
     ----------
@@ -361,7 +361,6 @@ def MIS(G, weights, maxiter=None):
     fn = amg_core.maximal_independent_set_parallel
 
     """
-
     if not isspmatrix_csr(G):
         raise TypeError('expected csr_matrix')
     G = remove_diagonal(G)
@@ -384,13 +383,13 @@ def MIS(G, weights, maxiter=None):
 
 # internal function
 def preprocess(S, coloring_method=None):
-    """Common preprocess for splitting functions
+    """Preprocess splitting functions.
 
     Parameters
     ----------
     S : csr_matrix
         Strength of connection matrix
-    method : {string}
+    method : string
         Algorithm used to compute the vertex coloring:
             * 'MIS' - Maximal Independent Set
             * 'JP'  - Jones-Plassmann (parallel)
@@ -418,7 +417,6 @@ def preprocess(S, coloring_method=None):
         - Augments weights with graph coloring (if use_color == True)
 
     """
-
     if not isspmatrix_csr(S):
         raise TypeError('expected csr_matrix')
 

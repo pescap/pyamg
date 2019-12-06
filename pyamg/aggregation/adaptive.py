@@ -1,4 +1,4 @@
-"""Adaptive Smoothed Aggregation"""
+"""Adaptive Smoothed Aggregation."""
 from __future__ import absolute_import
 
 
@@ -28,28 +28,29 @@ __all__ = ['adaptive_sa_solver']
 
 
 def eliminate_local_candidates(x, AggOp, A, T, Ca=1.0, **kwargs):
-    """
+    """Eliminate canidates locally.
+
     Helper function that determines where to eliminate candidates locally
     on a per aggregate basis.
 
     Parameters
     ---------
-    x : {array}
+    x : array
         n x 1 vector of new candidate
-    AggOp : {CSR or CSC sparse matrix}
+    AggOp : CSR or CSC sparse matrix
         Aggregation operator for the level that x was generated for
-    A : {sparse matrix}
+    A : sparse matrix
         Operator for the level that x was generated for
-    T : {sparse matrix}
+    T : sparse matrix
         Tentative prolongation operator for the level that x was generated for
-    Ca : {scalar}
+    Ca : scalar
         Constant threshold parameter to decide when to drop candidates
 
     Returns
     -------
     Nothing, x is modified in place
-    """
 
+    """
     if not (isspmatrix_csr(AggOp) or isspmatrix_csc(AggOp)):
         raise TypeError('AggOp must be a CSR or CSC matrix')
     else:
@@ -58,12 +59,13 @@ def eliminate_local_candidates(x, AggOp, A, T, Ca=1.0, **kwargs):
         nPDEs = int(ndof/AggOp.shape[0])
 
     def aggregate_wise_inner_product(z, AggOp, nPDEs, ndof):
-        """
+        """Inner products per aggregate.
+
         Helper function that calculates <z, z>_i, i.e., the
         inner product of z only over aggregate i
         Returns a vector of length num_aggregates where entry i is <z, z>_i
-        """
 
+        """
         z = np.ravel(z)*np.ravel(z)
         innerp = np.zeros((1, AggOp.shape[1]), dtype=z.dtype)
         for j in range(nPDEs):
@@ -72,10 +74,12 @@ def eliminate_local_candidates(x, AggOp, A, T, Ca=1.0, **kwargs):
         return innerp.reshape(-1, 1)
 
     def get_aggregate_weights(AggOp, A, z, nPDEs, ndof):
-        """
+        """Weights per aggregate.
+
         Calculate local aggregate quantities
         Return a vector of length num_aggregates where entry i is
         (card(agg_i)/A.shape[0]) ( <Az, z>/rho(A) )
+
         """
         rho = approximate_spectral_radius(A)
         zAz = np.dot(z.reshape(1, -1), A*z.reshape(-1, 1))
@@ -102,7 +106,7 @@ def eliminate_local_candidates(x, AggOp, A, T, Ca=1.0, **kwargs):
 
 
 def unpack_arg(v):
-    """Helper function for local methods"""
+    """Use for local methods."""
     if isinstance(v, tuple):
         return v[0], v[1]
     else:
@@ -119,39 +123,38 @@ def adaptive_sa_solver(A, initial_candidates=None, symmetry='hermitian',
                        coarse_solver='pinv2',
                        eliminate_local=(False, {'Ca': 1.0}), keep=False,
                        **kwargs):
-    """
-    Create a multilevel solver using Adaptive Smoothed Aggregation (aSA)
+    """Create a multilevel solver using Adaptive Smoothed Aggregation (aSA).
 
     Parameters
     ----------
-    A : {csr_matrix, bsr_matrix}
+    A : csr_matrix, bsr_matrix
         Square matrix in CSR or BSR format
-    initial_candidates : {None, n x m dense matrix}
+    initial_candidates : None, n x m dense matrix
         If a matrix, then this forms the basis for the first m candidates.
         Also in this case, the initial setup stage is skipped, because this
         provides the first candidate(s).  If None, then a random initial guess
         and relaxation are used to inform the initial candidate.
-    symmetry : {string}
+    symmetry : string
         'symmetric' refers to both real and complex symmetric
         'hermitian' refers to both complex Hermitian and real Hermitian
         Note that for the strictly real case, these two options are the same
         Note that this flag does not denote definiteness of the operator
-    pdef : {bool}
+    pdef : bool
         True or False, whether A is known to be positive definite.
-    num_candidates : {integer} : default 1
+    num_candidates : integer
         Number of near-nullspace candidates to generate
-    candidate_iters : {integer} : default 5
+    candidate_iters : integer
         Number of smoothing passes/multigrid cycles used at each level of
         the adaptive setup phase
-    improvement_iters : {integer} : default 0
+    improvement_iters : integer
         Number of times each candidate is improved
-    epsilon : {float} : default 0.1
+    epsilon : float
         Target convergence factor
-    max_levels : {integer} : default 10
+    max_levels : integer
         Maximum number of levels to be used in the multilevel solver.
-    max_coarse : {integer} : default 500
+    max_coarse : integer
         Maximum number of variables permitted on the coarse grid.
-    prepostsmoother : {string or dict}
+    prepostsmoother : string or dict
         Pre- and post-smoother used in the adaptive method
     strength : ['symmetric', 'classical', 'evolution', ('predefined', {'C': csr_matrix}), None]
         Method used to determine the strength of connection between unknowns of
@@ -167,13 +170,13 @@ def adaptive_sa_solver(A, initial_candidates=None, symmetry='hermitian',
         Optionally, may be a tuple (fn, args), where fn is a string such as
         ['splu', 'lu', ...] or a callable function, and args is a dictionary of
         arguments to be passed to fn.
-    eliminate_local : {tuple}
+    eliminate_local : tuple
         Length 2 tuple.  If the first entry is True, then eliminate candidates
         where they aren't needed locally, using the second entry of the tuple
         to contain arguments to local elimination routine.  Given the rigid
         sparse data structures, this doesn't help much, if at all, with
         complexity.  Its more of a diagnostic utility.
-    keep: {bool} : default False
+    keep: bool
         Flag to indicate keeping extra operators in the hierarchy for
         diagnostics.  For example, if True, then strength of connection (C),
         tentative prolongation (T), and aggregation (AggOp) are kept.
@@ -185,7 +188,6 @@ def adaptive_sa_solver(A, initial_candidates=None, symmetry='hermitian',
 
     Notes
     -----
-
     - Floating point value representing the "work" required to generate
       the solver.  This value is the total cost of just relaxation, relative
       to the fine grid.  The relaxation method used is assumed to symmetric
@@ -202,27 +204,23 @@ def adaptive_sa_solver(A, initial_candidates=None, symmetry='hermitian',
     >>> from pyamg.gallery import stencil_grid
     >>> from pyamg.aggregation import adaptive_sa_solver
     >>> import numpy as np
-    >>> A=stencil_grid([[-1,-1,-1],[-1,8.0,-1],[-1,-1,-1]],\
-                       (31,31),format='csr')
+    >>> A=stencil_grid([[-1,-1,-1],[-1,8.0,-1],[-1,-1,-1]], (31,31),format='csr')
     >>> [asa,work] = adaptive_sa_solver(A,num_candidates=1)
     >>> residuals=[]
-    >>> x=asa.solve(b=np.ones((A.shape[0],)), x0=np.ones((A.shape[0],)),\
-                    residuals=residuals)
+    >>> x=asa.solve(b=np.ones((A.shape[0],)), x0=np.ones((A.shape[0],)), residuals=residuals)
 
     References
     ----------
     .. [1] Brezina, Falgout, MacLachlan, Manteuffel, McCormick, and Ruge
-       "Adaptive Smoothed Aggregation ($\alpha$SA) Multigrid"
+       "Adaptive Smoothed Aggregation (alpha SA) Multigrid"
        SIAM Review Volume 47,  Issue 2  (2005)
-       http://www.cs.umn.edu/~maclach/research/aSA2.pdf
 
     """
-
     if not (isspmatrix_csr(A) or isspmatrix_bsr(A)):
         try:
             A = csr_matrix(A)
             warn("Implicit conversion of A to CSR", SparseEfficiencyWarning)
-        except:
+        except BaseException:
             raise TypeError('Argument A must have type csr_matrix or\
                             bsr_matrix, or be convertible to csr_matrix')
 
@@ -361,9 +359,7 @@ def adaptive_sa_solver(A, initial_candidates=None, symmetry='hermitian',
 def initial_setup_stage(A, symmetry, pdef, candidate_iters, epsilon,
                         max_levels, max_coarse, aggregate, prepostsmoother,
                         smooth, strength, work, initial_candidate=None):
-    """
-    Computes a complete aggregation and the first near-nullspace candidate
-    following Algorithm 3 in Brezina et al.
+    """Compute aggregation and the first near-nullspace candidate following Algorithm 3 in Brezina et al.
 
     Parameters
     ----------
@@ -375,11 +371,11 @@ def initial_setup_stage(A, symmetry, pdef, candidate_iters, epsilon,
     References
     ----------
     .. [1] Brezina, Falgout, MacLachlan, Manteuffel, McCormick, and Ruge
-       "Adaptive Smoothed Aggregation ($\alpha$SA) Multigrid"
+       "Adaptive Smoothed Aggregation (aSA) Multigrid"
        SIAM Review Volume 47,  Issue 2  (2005)
        http://www.cs.umn.edu/~maclach/research/aSA2.pdf
-    """
 
+    """
     # Define relaxation routine
     def relax(A, x):
         fn, kwargs = unpack_arg(prepostsmoother)
@@ -400,7 +396,7 @@ def initial_setup_stage(A, symmetry, pdef, candidate_iters, epsilon,
                        coefficients=[1.0/approximate_spectral_radius(A)])
         elif fn == 'gmres':
             x[:] = (gmres(A, np.zeros_like(x), x0=x,
-                    maxiter=candidate_iters)[0]).reshape(x.shape)
+                          maxiter=candidate_iters)[0]).reshape(x.shape)
         else:
             raise TypeError('Unrecognized smoother')
 
@@ -572,9 +568,7 @@ def initial_setup_stage(A, symmetry, pdef, candidate_iters, epsilon,
 
 def general_setup_stage(ml, symmetry, candidate_iters, prepostsmoother,
                         smooth, eliminate_local, coarse_solver, work):
-    """
-    Computes additional candidates and improvements
-    following Algorithm 4 in Brezina et al.
+    """Compute additional candidates and improvements following Algorithm 4 in Brezina et al.
 
     Parameters
     ----------
@@ -589,8 +583,8 @@ def general_setup_stage(ml, symmetry, candidate_iters, prepostsmoother,
        "Adaptive Smoothed Aggregation (alphaSA) Multigrid"
        SIAM Review Volume 47,  Issue 2  (2005)
        http://www.cs.umn.edu/~maclach/research/aSA2.pdf
-    """
 
+    """
     def make_bridge(T):
         M, N = T.shape
         K = T.blocksize[0]

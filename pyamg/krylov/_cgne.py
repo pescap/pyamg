@@ -12,7 +12,7 @@ __all__ = ['cgne']
 
 def cgne(A, b, x0=None, tol=1e-5, maxiter=None, xtype=None, M=None,
          callback=None, residuals=None):
-    '''Conjugate Gradient, Normal Error algorithm
+    """Conjugate Gradient, Normal Error algorithm.
 
     Applies CG to the normal equations, A.H A x = b. Left preconditioning
     is supported.  Note that unless A is well-conditioned, the use of
@@ -20,11 +20,11 @@ def cgne(A, b, x0=None, tol=1e-5, maxiter=None, xtype=None, M=None,
 
     Parameters
     ----------
-    A : {array, matrix, sparse matrix, LinearOperator}
+    A : array, matrix, sparse matrix, LinearOperator
         n x n, linear system to solve
-    b : {array, matrix}
+    b : array, matrix
         right hand side, shape is (n,) or (n,1)
-    x0 : {array, matrix}
+    x0 : array, matrix
         initial guess, default is a vector of zeros
     tol : float
         relative convergence tolerance, i.e. tol is scaled by ||r_0||_2
@@ -32,7 +32,7 @@ def cgne(A, b, x0=None, tol=1e-5, maxiter=None, xtype=None, M=None,
         maximum number of allowed iterations
     xtype : type
         dtype for the solution, default is automatic type detection
-    M : {array, matrix, sparse matrix, LinearOperator}
+    M : array, matrix, sparse matrix, LinearOperator
         n x n, inverted preconditioner, i.e. solve M A A.H x = M b.
     callback : function
         User-supplied function is called after each iteration as
@@ -79,14 +79,13 @@ def cgne(A, b, x0=None, tol=1e-5, maxiter=None, xtype=None, M=None,
        Second Edition", SIAM, pp. 276-7, 2003
        http://www-users.cs.umn.edu/~saad/books.html
 
-    '''
-
+    """
     # Store the conjugate transpose explicitly as it will be used much later on
     if isspmatrix(A):
         AH = A.H
     else:
         # TODO avoid doing this since A may be a different sparse type
-        AH = aslinearoperator(np.asmatrix(A).H)
+        AH = aslinearoperator(np.asarray(A).conj().T)
 
     # Convert inputs to linear system, with error checking
     A, M, x, b, postprocess = make_system(A, M, x0, b)

@@ -1,5 +1,4 @@
 import numpy as np
-import scipy as sp
 import scipy.sparse
 from scipy.sparse import csr_matrix, SparseEfficiencyWarning
 
@@ -30,8 +29,8 @@ class TestParameters(TestCase):
 
             np.random.seed(0)  # make tests repeatable
 
-            x = sp.rand(A.shape[0])
-            b = A * sp.rand(A.shape[0])
+            x = np.random.rand(A.shape[0])
+            b = A * np.random.rand(A.shape[0])
 
             residuals = []
             x_sol = ml.solve(b, x0=x, maxiter=30, tol=1e-10,
@@ -109,8 +108,8 @@ class TestComplexParameters(TestCase):
 
             np.random.seed(0)  # make tests repeatable
 
-            x = sp.rand(A.shape[0]) + 1.0j * sp.rand(A.shape[0])
-            b = A * sp.rand(A.shape[0])
+            x = np.random.rand(A.shape[0]) + 1.0j * np.random.rand(A.shape[0])
+            b = A * np.random.rand(A.shape[0])
             residuals = []
 
             x_sol = ml.solve(b, x0=x, maxiter=30, tol=1e-10,
@@ -205,8 +204,8 @@ class TestSolverPerformance(TestCase):
 
             np.random.seed(0)  # make tests repeatable
 
-            x = sp.rand(A.shape[0])
-            b = A * sp.rand(A.shape[0])
+            x = np.random.rand(A.shape[0])
+            b = A * np.random.rand(A.shape[0])
 
             residuals = []
             x_sol = ml.solve(b, x0=x, maxiter=20, tol=1e-10,
@@ -224,10 +223,10 @@ class TestSolverPerformance(TestCase):
     def test_DAD(self):
         A = poisson((50, 50), format='csr')
 
-        x = sp.rand(A.shape[0])
-        b = sp.rand(A.shape[0])
+        x = np.random.rand(A.shape[0])
+        b = np.random.rand(A.shape[0])
 
-        D = diag_sparse(1.0 / np.sqrt(10 ** (12 * sp.rand(A.shape[0]) - 6)))
+        D = diag_sparse(1.0 / np.sqrt(10 ** (12 * np.random.rand(A.shape[0]) - 6)))
         D = D.tocsr()
         D_inv = diag_sparse(1.0 / D.data)
 
@@ -257,8 +256,8 @@ class TestSolverPerformance(TestCase):
         # rho_scale is the amount that each successive improve_candidates
         # option should improve convergence over the previous
         # improve_candidates option.
-        improve_candidates_list = [None, [('block_gauss_seidel',
-                                   {'iterations': 4, 'sweep': 'symmetric'})]]
+        improve_candidates_list = [
+            None, [('block_gauss_seidel', {'iterations': 4, 'sweep': 'symmetric'})]]
         # make tests repeatable
         np.random.seed(0)
 
@@ -270,8 +269,8 @@ class TestSolverPerformance(TestCase):
         cases.append((A_elas, B_elas, 0.9))
         for (A, B, rho_scale) in cases:
             last_rho = -1.0
-            x0 = sp.rand(A.shape[0], 1)
-            b = sp.rand(A.shape[0], 1)
+            x0 = np.random.rand(A.shape[0], 1)
+            b = np.random.rand(A.shape[0], 1)
             for ic in improve_candidates_list:
                 ml = smoothed_aggregation_solver(A, B, max_coarse=10,
                                                  improve_candidates=ic)
@@ -303,7 +302,7 @@ class TestSolverPerformance(TestCase):
                      ('block_gauss_seidel', {'sweep': 'symmetric'}),
                      'jacobi', 'block_jacobi']
         rng = np.arange(1, n + 1, dtype='float').reshape(-1, 1)
-        Bs = [np.ones((n, 1)), sp.hstack((np.ones((n, 1)), rng))]
+        Bs = [np.ones((n, 1)), np.hstack((np.ones((n, 1)), rng))]
 
         # TODO:
         # why does python 3 require significant=6 while python 2 passes
@@ -316,8 +315,8 @@ class TestSolverPerformance(TestCase):
                                                  postsmoother=smoother)
                 P = ml.aspreconditioner()
                 np.random.seed(0)
-                x = sp.rand(n,)
-                y = sp.rand(n,)
+                x = np.random.rand(n,)
+                y = np.random.rand(n,)
                 out = (np.dot(P * x, y), np.dot(x, P * y))
                 # print("smoother = %s %g %g" % (smoother, out[0], out[1]))
                 assert_approx_equal(out[0], out[1])
@@ -384,15 +383,15 @@ class TestSolverPerformance(TestCase):
                                               improve_candidates=None,
                                               **SA_build_args)
         for (symm_lvl, nonsymm_lvl) in zip(sa_nonsymm.levels, sa_symm.levels):
-            assert_array_almost_equal(symm_lvl.A.todense(),
-                                      nonsymm_lvl.A.todense())
+            assert_array_almost_equal(symm_lvl.A.toarray(),
+                                      nonsymm_lvl.A.toarray())
 
     def test_coarse_solver_opts(self):
         # these tests are meant to test whether coarse solvers are correctly
         # passed parameters
 
         A = poisson((30, 30), format='csr')
-        b = sp.rand(A.shape[0], 1)
+        b = np.random.rand(A.shape[0], 1)
 
         # for each pair, the first entry should yield an SA solver that
         # converges in fewer iterations for a basic Poisson problem
@@ -421,13 +420,12 @@ class TestSolverPerformance(TestCase):
         A = poisson((7, 7), format='csr')
         cases = [A.tobsr(blocksize=(1, 1))]
         cases.append(A.tocsc())
-        cases.append(A.todense())
+        cases.append(A.toarray())
 
         sa_old = smoothed_aggregation_solver(A, max_coarse=10)
         for AA in cases:
             sa_new = smoothed_aggregation_solver(AA, max_coarse=10)
-            assert(np.abs(np.ravel(sa_old.levels[-1].A.todense() -
-                          sa_new.levels[-1].A.todense())).max() < 0.01)
+            assert(np.abs(np.ravel(sa_old.levels[-1].A.toarray() - sa_new.levels[-1].A.toarray())).max() < 0.01)
             sa_old = sa_new
 
 
@@ -445,17 +443,17 @@ class TestComplexSolverPerformance(TestCase):
         A = poisson((5000,), format='csr')
         Ai = A + 1.0j * scipy.sparse.eye(A.shape[0], A.shape[1])
         self.cases.append((Ai, None, 0.12, 'symmetric',
-                          ('jacobi', {'omega': 4.0 / 3.0})))
+                           ('jacobi', {'omega': 4.0 / 3.0})))
         self.cases.append((Ai, None, 0.12, 'symmetric',
-                          ('energy', {'krylov': 'gmres'})))
+                           ('energy', {'krylov': 'gmres'})))
 
         # Test 2
         A = poisson((71, 71), format='csr')
         Ai = A + (0.625 / 0.01) * 1j * scipy.sparse.eye(A.shape[0], A.shape[1])
         self.cases.append((Ai, None, 1e-3, 'symmetric',
-                          ('jacobi', {'omega': 4.0 / 3.0})))
+                           ('jacobi', {'omega': 4.0 / 3.0})))
         self.cases.append((Ai, None, 1e-3, 'symmetric',
-                          ('energy', {'krylov': 'cgnr'})))
+                           ('energy', {'krylov': 'cgnr'})))
 
         # Test 3
         A = poisson((60, 60), format='csr')
@@ -487,8 +485,8 @@ class TestComplexSolverPerformance(TestCase):
 
             np.random.seed(0)  # make tests repeatable
 
-            x = sp.rand(A.shape[0]) + 1.0j * sp.rand(A.shape[0])
-            b = A * sp.rand(A.shape[0])
+            x = np.random.rand(A.shape[0]) + 1.0j * np.random.rand(A.shape[0])
+            b = A * np.random.rand(A.shape[0])
             residuals = []
 
             x_sol = ml.solve(b, x0=x, maxiter=20, tol=1e-10,
@@ -561,8 +559,8 @@ class TestComplexSolverPerformance(TestCase):
                                               improve_candidates=None,
                                               **SA_build_args)
         for (symm_lvl, nonsymm_lvl) in zip(sa_nonsymm.levels, sa_symm.levels):
-            assert_array_almost_equal(symm_lvl.A.todense(),
-                                      nonsymm_lvl.A.todense())
+            assert_array_almost_equal(symm_lvl.A.toarray(),
+                                      nonsymm_lvl.A.toarray())
 
     def test_precision(self):
         """
@@ -572,14 +570,14 @@ class TestComplexSolverPerformance(TestCase):
         """
 
         np.random.seed(0)  # make tests repeatable
-        A = poisson((10,10), dtype=np.float64, format='csr')
+        A = poisson((10, 10), dtype=np.float64, format='csr')
         b = np.random.rand(A.shape[0]).astype(A.dtype)
         ml = smoothed_aggregation_solver(A)
         x = np.random.rand(A.shape[0]).astype(A.dtype)
         x32 = ml.solve(b, x0=x, maxiter=1)
 
         np.random.seed(0)  # make tests repeatable
-        A = poisson((10,10), dtype=np.float32, format='csr')
+        A = poisson((10, 10), dtype=np.float32, format='csr')
         b = np.random.rand(A.shape[0]).astype(A.dtype)
         ml = smoothed_aggregation_solver(A)
         x = np.random.rand(A.shape[0]).astype(A.dtype)

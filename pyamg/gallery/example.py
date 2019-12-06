@@ -1,4 +1,4 @@
-"""Examples stored in files"""
+"""Examples stored in files."""
 
 
 import os
@@ -11,13 +11,11 @@ __all__ = ['load_example']
 base_dir = os.path.split(__file__)[0]
 example_dir = os.path.join(base_dir, 'example_data')
 example_files = glob(os.path.join(example_dir, '*.mat'))
-example_names = [os.path.split(name)[1][:-4] for name in example_files]
-
-example_names.sort()
+example_names = sorted([os.path.split(name)[1][:-4] for name in example_files])
 
 
 def load_example(name):
-    """Load an example problem by name
+    """Load an example problem by name.
 
     Parameters
     ----------
@@ -40,7 +38,6 @@ def load_example(name):
     >>> ex = load_example('knot')
 
     """
-
     if name not in example_names:
         raise ValueError('no example with name (%s)' % name)
     else:

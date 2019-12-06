@@ -1,4 +1,4 @@
-"""Classical AMG Interpolation methods"""
+"""Classical AMG Interpolation methods."""
 
 
 import numpy as np
@@ -10,13 +10,13 @@ __all__ = ['direct_interpolation', 'ls_interpolation']
 
 
 def direct_interpolation(A, C, splitting):
-    """Create prolongator using direct interpolation
+    """Create prolongator using direct interpolation.
 
     Parameters
     ----------
-    A : {csr_matrix}
+    A : csr_matrix
         NxN matrix in CSR format
-    C : {csr_matrix}
+    C : csr_matrix
         Strength-of-Connection matrix
         Must have zero diagonal
     splitting : array
@@ -24,7 +24,7 @@ def direct_interpolation(A, C, splitting):
 
     Returns
     -------
-    P : {csr_matrix}
+    P : csr_matrix
         Prolongator using direct interpolation
 
     Examples
@@ -35,7 +35,7 @@ def direct_interpolation(A, C, splitting):
     >>> A = poisson((5,),format='csr')
     >>> splitting = np.array([1,0,1,0,1], dtype='intc')
     >>> P = direct_interpolation(A, A, splitting)
-    >>> print P.todense()
+    >>> print P.toarray()
     [[ 1.   0.   0. ]
      [ 0.5  0.5  0. ]
      [ 0.   1.   0. ]

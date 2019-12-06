@@ -1,6 +1,7 @@
 import numpy as np
 from pyamg.util.linalg import norm
 from scipy.sparse import csr_matrix
+from scipy import rand
 import numpy as np
 
 from pyamg.gallery import poisson

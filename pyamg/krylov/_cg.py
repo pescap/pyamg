@@ -111,7 +111,8 @@ def cg(A, b, x0=None, tol=1e-5, maxiter=None, xtype=None, M=None,
     normr = np.sqrt(rz)
 
     if residuals is not None:
-        residuals[:] = [normr]  # initial residual
+        residuals[:] = [norm(b-A*x)]
+        #residuals[:] = [normr]  # initial residual
 
     # Check initial guess ( scaling by b, if b != 0,
     #   must account for case when norm(b) is very small)
@@ -164,7 +165,8 @@ def cg(A, b, x0=None, tol=1e-5, maxiter=None, xtype=None, M=None,
         normr = np.sqrt(rz)                          # use preconditioner norm
 
         if residuals is not None:
-            residuals.append(normr)
+            residuals.append(norm(b-A*x))
+            #residuals.append(normr)
 
         if callback is not None:
             callback(x)

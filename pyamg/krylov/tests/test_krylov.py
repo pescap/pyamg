@@ -1,4 +1,4 @@
-from pyamg.krylov import bicgstab, cg, cgne, cgnr, cr, fgmres, gmres, srecg
+from pyamg.krylov import bicgstab, cg, cgne, cgnr, cr, fgmres, gmres, ekcg, srecg
 from pyamg.krylov._gmres_householder import gmres_householder
 from pyamg.krylov._gmres_mgs import gmres_mgs
 import numpy as np
@@ -23,7 +23,7 @@ class TestKrylov(TestCase):
         self.orth = [cgne]
         self.inexact = [bicgstab]
         self.spd_orth = [cg]
-        self.spd_orth_enlarged = [srecg]
+        self.spd_orth_enlarged = [ekcg, srecg]
 
         # 1x1
         A = np.array([[1.2]])
@@ -205,8 +205,6 @@ class TestKrylov(TestCase):
                                       maxiter=case['maxiter'])
                 xNew = xNew.reshape(-1, 1)
                 soln = solve(A, b)
-                print xNew
-                print soln
                 assert_equal((norm(soln - xNew)/norm(soln - x0)) <
                              case['reduction_factor'], True,
                              err_msg='Enlarged Krylov Method Failed Test')

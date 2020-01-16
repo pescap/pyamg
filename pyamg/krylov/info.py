@@ -11,6 +11,7 @@ Functions
     - cgne
     - cgnr
     - cg
+    - ekcg
     - srecg
     - bicgstab
     - steepest descent, (simple iteration)

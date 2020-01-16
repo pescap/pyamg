@@ -6,6 +6,7 @@ from .info import __doc__
 from ._gmres import *
 from ._fgmres import *
 from ._cg import *
+from ._ekcg import *
 from ._srecg import *
 from ._cr import *
 from ._cgnr import *

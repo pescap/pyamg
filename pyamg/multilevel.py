@@ -433,7 +433,7 @@ class multilevel_solver:
                     residuals[:] = [rn]
 
                     def callback(x):
-                        if sp.isscalar(x):
+                        if np.isscalar(x):
                             residuals.append(x)
                         else:
                             rn = np.linalg.norm(b - A * x, axis=0)

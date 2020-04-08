@@ -1,7 +1,7 @@
 import numpy
 from numpy import ones, eye, zeros, bincount, empty, asarray, array
 from numpy.random import seed
-from scipy import rand
+from numpy.random import rand
 from scipy.sparse import csr_matrix, coo_matrix
 
 from pyamg.gallery import poisson, load_example

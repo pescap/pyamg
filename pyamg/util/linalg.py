@@ -202,9 +202,9 @@ def _approximate_eigenvalues(A, tol, maxiter, symmetric=None,
     maxiter = min(A.shape[0], maxiter)
 
     if initial_guess is None:
-        v0 = sp.rand(A.shape[1], 1)
+        v0 = np.random.rand(A.shape[1], 1)
         if A.dtype == complex:
-            v0 = v0 + 1.0j * sp.rand(A.shape[1], 1)
+            v0 = v0 + 1.0j * np.random.rand(A.shape[1], 1)
     else:
         v0 = initial_guess
 
@@ -360,9 +360,9 @@ def approximate_spectral_radius(A, tol=0.01, maxiter=15, restart=5,
             raise ValueError('expected square A')
 
         if initial_guess is None:
-            v0 = sp.rand(A.shape[1], 1)
+            v0 = np.random.rand(A.shape[1], 1)
             if A.dtype == complex:
-                v0 = v0 + 1.0j * sp.rand(A.shape[1], 1)
+                v0 = v0 + 1.0j * np.random.rand(A.shape[1], 1)
         else:
             if initial_guess.shape[0] != A.shape[0]:
                 raise ValueError('initial_guess and A must have same shape')
@@ -543,11 +543,11 @@ def ishermitian(A, fast_check=True, tol=1e-6, verbose=False):
         A = np.asarray(A)
 
     if fast_check:
-        x = sp.rand(A.shape[0], 1)
-        y = sp.rand(A.shape[0], 1)
+        x = np.random.rand(A.shape[0], 1)
+        y = np.random.rand(A.shape[0], 1)
         if A.dtype == complex:
-            x = x + 1.0j*sp.rand(A.shape[0], 1)
-            y = y + 1.0j*sp.rand(A.shape[0], 1)
+            x = x + 1.0j*np.random.rand(A.shape[0], 1)
+            y = y + 1.0j*np.random.rand(A.shape[0], 1)
         xAy = np.dot((A.dot(x)).conjugate().T, y)
         xAty = np.dot(x.conjugate().T, A.dot(y))
         diff = float(np.abs(xAy - xAty) / np.sqrt(np.abs(xAy*xAty)))
@@ -783,6 +783,37 @@ def split_residual(v, t):
     z = np.zeros((n,t), dtype=v.dtype)
     for col in range(t):
         z[start:stop, col] = v[start:stop]
+        start = stop
+        stop += partition
+
+    return z
+
+def resplit(v):
+    """
+    Resplits the nxt vector v into the sparsity pattern
+    of the original splitting 
+
+    Parameters
+    ----------
+         v : array_like
+             nx1 vector to be projected
+
+    Returns
+    -------
+    z : array_like
+        nxt vector with v split across the t columns 
+    """
+    n = v.shape[0]
+    t = v.shape[1]
+    partition = int(n/t)
+    start = 0
+    stop = partition
+
+    # Make sure z is given the same type as v -- could be complex
+    w = np.sum(v, axis=0)
+    z = np.zeros((n,t), dtype=v.dtype)
+    for col in range(t):
+        z[start:stop, col] = w[start:stop]
         start = stop
         stop += partition
 

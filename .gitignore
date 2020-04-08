@@ -18,4 +18,5 @@ pyamg.egg-info/*
 build/
 var/
 generated/
+tmp/
 *.whl

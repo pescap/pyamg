@@ -1,5 +1,7 @@
 import numpy as np
-from scipy import rand, real, imag, arange
+#from scipy import rand, real, imag, arange
+from numpy.random import rand
+from numpy import real, imag, arange
 from scipy.sparse import csr_matrix, isspmatrix_csr, isspmatrix_bsr, spdiags,\
     coo_matrix
 import scipy.sparse

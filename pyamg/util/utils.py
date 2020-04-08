@@ -75,7 +75,7 @@ def profile_solver(ml, accel=None, **kwargs):
 
     """
     A = ml.levels[0].A
-    b = A * sp.rand(A.shape[0], 1)
+    b = A * np.random.rand(A.shape[0], 1)
     residuals = []
 
     if accel is None:
@@ -628,7 +628,7 @@ def get_block_diag(A, blocksize, inv_flag=True):
         raise TypeError('Expected sparse matrix')
     if A.shape[0] != A.shape[1]:
         raise ValueError("Expected square matrix")
-    if sp.mod(A.shape[0], blocksize) != 0:
+    if np.mod(A.shape[0], blocksize) != 0:
         raise ValueError("blocksize and A.shape must be compatible")
 
     # If the block diagonal of A already exists, return that
@@ -652,10 +652,10 @@ def get_block_diag(A, blocksize, inv_flag=True):
     # Peel off block diagonal by extracting block entries from the now BSR
     # matrix A
     A = A.asfptype()
-    block_diag = sp.zeros((int(A.shape[0]/blocksize), blocksize, blocksize),
+    block_diag = np.zeros((int(A.shape[0]/blocksize), blocksize, blocksize),
                           dtype=A.dtype)
 
-    AAIJ = (sp.arange(1, A.indices.shape[0]+1), A.indices, A.indptr)
+    AAIJ = (np.arange(1, A.indices.shape[0]+1), A.indices, A.indptr)
     shape = (int(A.shape[0]/blocksize), int(A.shape[0]/blocksize))
     diag_entries = csr_matrix(AAIJ, shape=shape).diagonal()
     diag_entries -= 1
@@ -721,7 +721,7 @@ def amalgamate(A, blocksize):
     """
     if blocksize == 1:
         return A
-    elif sp.mod(A.shape[0], blocksize) != 0:
+    elif np.mod(A.shape[0], blocksize) != 0:
         raise ValueError("Incompatible blocksize")
 
     A = A.tobsr(blocksize=(blocksize, blocksize))

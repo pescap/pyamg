@@ -2,6 +2,7 @@
 from __future__ import absolute_import
 
 import scipy as sp
+import numpy as np
 from . import relaxation
 from .chebyshev import chebyshev_polynomial_coefficients
 from pyamg.util.utils import scale_rows, get_block_diag, get_diagonal
@@ -361,8 +362,8 @@ def rho_block_D_inv_A(A, Dinv):
             raise ValueError('Dinv and A have incompatible dimensions')
 
         Dinv = sp.sparse.bsr_matrix((Dinv,
-                                     sp.arange(Dinv.shape[0]),
-                                     sp.arange(Dinv.shape[0]+1)),
+                                     np.arange(Dinv.shape[0]),
+                                     np.arange(Dinv.shape[0]+1)),
                                     shape=A.shape)
 
         # Don't explicitly form Dinv*A

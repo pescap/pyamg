@@ -591,6 +591,39 @@ class multilevel_solver:
         self.levels[lvl].postsmoother(A, x, b)
 
 
+class generic_solver:
+    def __init__(self, solver, solve):
+        self.solvername = repr(solver)
+        self.solver = solver
+        self.solve = solve
+
+    def __call__(self, A, b):
+        # make sure x is same dimensions and type as b
+        b = np.asanyarray(b)
+
+        if A.nnz == 0:
+            # if A.nnz = 0, then we expect no correction
+            x = np.zeros(b.shape)
+        else:
+            x = self.solve(self, A, b)
+
+        if isinstance(b, np.ndarray):
+            x = np.asarray(x)
+        elif isinstance(b, np.matrix):
+            # convert to ndarray
+            b = np.asarray(b)
+            x = np.asarray(x)
+        else:
+            raise ValueError('unrecognized type')
+
+        return x.reshape(b.shape)
+
+    def __repr__(self):
+        return 'coarse_grid_solver(' + self.solvername + ')'
+
+    def name(self):
+        return self.solvername
+
 def coarse_grid_solver(solver):
     """Return a coarse grid solver suitable for multilevel_solver.
 
@@ -725,32 +758,4 @@ def coarse_grid_solver(solver):
     else:
         raise ValueError('unknown solver: %s' % solver)
 
-    class generic_solver:
-        def __call__(self, A, b):
-            # make sure x is same dimensions and type as b
-            b = np.asanyarray(b)
-
-            if A.nnz == 0:
-                # if A.nnz = 0, then we expect no correction
-                x = np.zeros(b.shape)
-            else:
-                x = solve(self, A, b)
-
-            if isinstance(b, np.ndarray):
-                x = np.asarray(x)
-            elif isinstance(b, np.matrix):
-                # convert to ndarray
-                b = np.asarray(b)
-                x = np.asarray(x)
-            else:
-                raise ValueError('unrecognized type')
-
-            return x.reshape(b.shape)
-
-        def __repr__(self):
-            return 'coarse_grid_solver(' + repr(solver) + ')'
-
-        def name(self):
-            return repr(solver)
-
-    return generic_solver()
+    return generic_solver(solver, solve)

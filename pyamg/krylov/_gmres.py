@@ -111,21 +111,19 @@ def gmres(
     """
     # pass along **kwargs
     if orthog == "householder":
-        if H is None:
-            (x, flag) = gmres_householder(
-                A,
-                b,
-                x0=x0,
-                tol=tol,
-                restrt=restrt,
-                maxiter=maxiter,
-                M=M,
-                callback=callback,
-                residuals=residuals,
-                **kwargs
-            )
-        else:
-            raise NotImplementedError("Householder based H-GMRES not implemented yet")
+        (x, flag) = gmres_householder(
+            A,
+            b,
+            x0=x0,
+            tol=tol,
+            restrt=restrt,
+            maxiter=maxiter,
+            M=M,
+            H=H,
+            callback=callback,
+            residuals=residuals,
+            **kwargs
+        )
 
     elif orthog == "mgs":
         (x, flag) = gmres_mgs(

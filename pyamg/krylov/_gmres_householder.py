@@ -3,7 +3,7 @@ import warnings
 from warnings import warn
 
 import numpy as np
-from scipy.linalg import get_lapack_funcs
+from scipy.linalg import get_blas_funcs, get_lapack_funcs
 import scipy as sp
 from ..util.linalg import norm
 from ..util import make_system
@@ -26,6 +26,7 @@ def gmres_householder(
     restrt=None,
     maxiter=None,
     M=None,
+    H=None,
     callback=None,
     residuals=None,
 ):
@@ -60,6 +61,8 @@ def gmres_householder(
         - defaults to min(n,40) if restart=None
     M : array, matrix, sparse matrix, LinearOperator
         n x n, inverted preconditioner, i.e. solve M A x = M b.
+    H : array, matrix, sparse matrix, LinearOperator
+        n x n, Hermitian positive definite matrix induced by the H-norm GMRES.        
     callback : function
         User-supplied function is called after each iteration as
         callback(xk), where xk is the current solution vector
@@ -115,6 +118,8 @@ def gmres_householder(
 
     """
     # Convert inputs to linear system, with error checking
+    if H is not None:
+        H = make_system(A, H, x0, b)[1]    
     A, M, x, b, postprocess = make_system(A, M, x0, b)
     n = A.shape[0]
 
@@ -123,7 +128,25 @@ def gmres_householder(
 
     # Get fast access to underlying LAPACK routine
     [lartg] = get_lapack_funcs(["lartg"], [x])
+    if np.iscomplexobj(np.zeros((1,), dtype=x.dtype)):
+        [axpy, dotu, dotc, scal] = get_blas_funcs(["axpy", "dotu", "dotc", "scal"], [x])
+    else:
+        # real type
+        [axpy, dotu, dotc, scal] = get_blas_funcs(["axpy", "dot", "dot", "scal"], [x])    
 
+    if H is not None:
+        # Define the H-norm and H-inner product
+        def dotcH(x, y):
+            temp = H @ y
+            return dotc(x, temp)
+
+        def normH(x):
+            return np.sqrt(dotcH(x, x).real)
+
+    else:
+        #dotcH = dotc
+        normH = norm
+    
     # Set number of outer and inner iterations
     # If no restarts,
     #     then set max_inner=maxiter and max_outer=n
@@ -158,16 +181,16 @@ def gmres_householder(
     # Apply preconditioner
     r = M @ r
 
-    normr = norm(r)
+    normr = normH(r)
     if residuals is not None:
         residuals[:] = [normr]  # initial residual
 
     # Check initial guess if b != 0,
-    normb = norm(b)
+    normb = normH(b)
     if normb == 0.0:
         normMb = 1.0  # reset so that tol is unscaled
     else:
-        normMb = norm(M @ b)
+        normMb = normH(M @ b)
 
     # set the stopping criteria (see the docstring)
     if normr < tol * normMb:
@@ -187,7 +210,7 @@ def gmres_householder(
         w = r
         beta = _mysign(w[0]) * normr
         w[0] = w[0] + beta
-        w[:] = w / norm(w)
+        w[:] = w / normH(w)
 
         # Preallocate for Krylov vectors, Householder reflectors and
         # Hessenberg matrix
@@ -195,7 +218,7 @@ def gmres_householder(
         # Givens Rotations
         Q = np.zeros((4 * max_inner,), dtype=x.dtype)
         # upper Hessenberg matrix (made upper tri with Givens Rotations)
-        H = np.zeros((max_inner, max_inner), dtype=x.dtype)
+        Hess = np.zeros((max_inner, max_inner), dtype=x.dtype)
         # Householder reflectors
         W = np.zeros((max_inner + 1, n), dtype=x.dtype)
         W[0, :] = w
@@ -249,7 +272,7 @@ def gmres_householder(
                     if inner < (max_inner - 1):
                         w[inner + 1 :] = vslice
                         w[inner + 1] += alpha
-                        w[:] = w / norm(w)
+                        w[:] = w / normH(w)
 
                     # Apply new reflector to v
                     #  v = v - 2.0*w*(w.T*v)
@@ -284,7 +307,7 @@ def gmres_householder(
 
             # Write to upper Hessenberg Matrix,
             #   the LHS for the linear system in the Krylov Subspace
-            H[:, inner] = v[0:max_inner]
+            Hess[:, inner] = v[0:max_inner]
 
             niter += 1
 
@@ -300,7 +323,7 @@ def gmres_householder(
 
                 if callback is not None:
                     y = sp.linalg.solve(
-                        H[0 : (inner + 1), 0 : (inner + 1)], g[0 : (inner + 1)]
+                        Hess[0 : (inner + 1), 0 : (inner + 1)], g[0 : (inner + 1)]
                     )
                     update = np.zeros(x.shape, dtype=x.dtype)
                     amg_core.householder_hornerscheme(
@@ -314,9 +337,9 @@ def gmres_householder(
         # system.  Apparently this is the best way to solve a triangular system
         # in the magical world of scipy
         # piv = arange(inner+1)
-        # y = lu_solve((H[0:(inner+1), 0:(inner+1)], piv), g[0:(inner+1)],
+        # y = lu_solve((Hess[0:(inner+1), 0:(inner+1)], piv), g[0:(inner+1)],
         #             trans=0)
-        y = sp.linalg.solve(H[0 : (inner + 1), 0 : (inner + 1)], g[0 : (inner + 1)])
+        y = sp.linalg.solve(Hess[0 : (inner + 1), 0 : (inner + 1)], g[0 : (inner + 1)])
 
         # Use Horner like Scheme to map solution, y, back to original space.
         # Note that we do not use the last reflector.
@@ -334,7 +357,7 @@ def gmres_householder(
 
         # Apply preconditioner
         r = M @ r
-        normr = norm(r)
+        normr = normH(r)
 
         # Allow user access to the iterates
         if callback is not None:
